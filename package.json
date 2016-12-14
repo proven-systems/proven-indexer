@@ -4,7 +4,7 @@
   "description": "Indexer service for the Proven suite of Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer/issues"
   },
-  "homepage": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer#readme"
+  "homepage": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer#readme",
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  }
 }
