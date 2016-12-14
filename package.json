@@ -1,0 +1,19 @@
+{
+  "name": "proven-indexer",
+  "version": "1.0.0",
+  "description": "Indexer service for the Proven suite of Ethereum contracts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer.git"
+  },
+  "author": "1AmOXsGnfXdbNg3RMTyPCHkn2aT",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer/issues"
+  },
+  "homepage": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer#readme"
+}
