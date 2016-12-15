@@ -1,6 +1,11 @@
-module.exports = function() {
+var Proven = require('./proven');
+
+module.exports = function(options) {
+
+    this.proven = options.proven || new Proven();
 
     this.runOnce = function() {
-        console.log('I have a ham radio');
+        this.proven.onDepositionPublished(function(deposition) {
+        });
     };
 }

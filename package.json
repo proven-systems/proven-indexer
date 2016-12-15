@@ -4,7 +4,7 @@
   "description": "Indexer service for the Proven suite of Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha spec/",
     "spec": "./node_modules/.bin/cucumber-js"
   },
   "repository": {

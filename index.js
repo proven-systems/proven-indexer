@@ -1,3 +1,7 @@
 #! /usr/bin/env node
 
-console.log('I have a ham radio');
+var path = require('path');
+var Indexer = require(path.join(__dirname, 'src/indexer'));
+var indexer = new Indexer();
+
+indexer.runOnce();
