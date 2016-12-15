@@ -4,7 +4,8 @@
   "description": "Indexer service for the Proven suite of Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "spec": "./node_modules/.bin/cucumber-js"
   },
   "repository": {
     "type": "git",
@@ -12,12 +13,16 @@
   },
   "author": "1AmOXsGnfXdbNg3RMTyPCHkn2aT",
   "license": "AGPL-3.0",
+  "bin": {
+      "proven-indexer": "./index.js"
+  },
   "bugs": {
     "url": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer/issues"
   },
   "homepage": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "cucumber": "^2.0.0-rc.2",
     "mocha": "^3.2.0",
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0"
