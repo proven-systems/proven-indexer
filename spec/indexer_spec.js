@@ -13,21 +13,29 @@ describe('Indexer', function() {
     var indexer;
 
     beforeEach(function() {
+        sandbox = sinon.sandbox.create();
         options = {
-            proven: {
-                onDepositionPublished: sinon.spy()
-            }
+            proven: {onDepositionPublished: sinon.spy()},
+            retriever: {getMetadataFor: sinon.spy()}
         };
         indexer = new Indexer(options);
-        sandbox = sinon.sandbox.create();
     });
 
     afterEach(function() {
         sandbox.restore();
     });
 
-    it('can be run once', function() {
+    it('hooks the onDepositionPublished event on the contract', function() {
         indexer.runOnce();
         expect(options.proven.onDepositionPublished).to.have.been.called;
+    });
+
+    it('asks the image retriever for the metadata', function() {
+        var deposition = {ipfsHash: 'abcd'};
+        options.proven.onDepositionPublished = function(callback) {
+            callback(deposition)
+        };
+        indexer.runOnce();
+        expect(options.retriever.getMetadataFor).to.have.been.calledWith(deposition.ipfsHash);
     });
 });
