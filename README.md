@@ -1,0 +1,2 @@
+# proven-indexer
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/47d2a373db0b47639a147008c67a8e3c)](https://www.codacy.com/app/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer&amp;utm_campaign=badger)
