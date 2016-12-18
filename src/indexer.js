@@ -2,7 +2,7 @@ var proven;
 var retriever;
 var repository;
 
-function Indexer(options = {}) {
+function Indexer(options) {
     proven = options.proven;
     retriever = options.retriever;
     repository = options.repository;
