@@ -1,13 +1,11 @@
-var Proven = require('./proven');
-
 var proven;
 var retriever;
 var repository;
 
-function Indexer(options) {
-    proven = options.proven || new Proven();
-    retriever = options.retriever || new Retriever();
-    repository = options.repository || new Repository();
+function Indexer(options = {}) {
+    proven = options.proven;
+    retriever = options.retriever;
+    repository = options.repository;
 }
 
 Indexer.prototype.runOnce = function() {

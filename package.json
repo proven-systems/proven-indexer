@@ -14,7 +14,7 @@
   "author": "1AmOXsGnfXdbNg3RMTyPCHkn2aT",
   "license": "AGPL-3.0",
   "bin": {
-      "proven-indexer": "./index.js"
+    "proven-indexer": "./index.js"
   },
   "bugs": {
     "url": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer/issues"
@@ -27,5 +27,7 @@
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "web3": "^0.17.0-beta"
+  }
 }
