@@ -2,10 +2,10 @@ var proven;
 var retriever;
 var repository;
 
-function Indexer(options) {
-    proven = options.proven;
-    retriever = options.retriever;
-    repository = options.repository;
+function Indexer(_proven, _retriever, _repository) {
+    proven = _proven;
+    retriever = _retriever;
+    repository = _repository;
 }
 
 Indexer.prototype.runOnce = function() {
