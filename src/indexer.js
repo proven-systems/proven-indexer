@@ -1,17 +1,26 @@
 var proven;
-var retriever;
+var ipfsLink;
+var metadataGatherer;
 var repository;
 
-function Indexer(_proven, _retriever, _repository) {
+function Indexer(_proven, _ipfsLink, _metadataGatherer, _repository) {
     proven = _proven;
-    retriever = _retriever;
+    ipfsLink = _ipfsLink;
+    metadataGatherer = _metadataGatherer;
     repository = _repository;
 }
 
 Indexer.prototype.runOnce = function() {
     proven.onDepositionPublished(function(deposition) {
-        var metadata = retriever.getMetadataFor(deposition.ipfsHash);
-        repository.store(metadata);
+        ipfsLink.pinEnclosure(deposition.ipfsHash, function() {
+            ipfsLink.readManifest(deposition.ipfsHash, function(manifest) {
+                ipfsLink.readPayload(deposition.ipfsHash, manifest.payloadFilePath, function(payload) {
+                    metadataGatherer.gatherFor(manifest, payload, function(metadata) {
+                        repository.store(metadata);
+                    });
+                });
+            });
+        });
     });
 };
 

@@ -10,10 +10,13 @@ describe('Indexer', function() {
 
     var sandbox;
     var proven;
-    var retriever;
+    var ipfsLink;
+    var metadataGatherer;
     var repository;
     var indexer;
     var mockDeposition = {ipfsHash: 'abcd'};
+    var mockManifest = {payloadFilePath: '/path/to/file'};
+    var mockPayload = {};
     var mockMetadata = {filename: 'abcd', importantTag: 'efg'};
 
     beforeEach(function() {
@@ -21,13 +24,18 @@ describe('Indexer', function() {
         proven = {
             onDepositionPublished: (callback) => {callback(mockDeposition);}
         };
-        retriever = {
-            getMetadataFor: (ipfsHash) => {return mockMetadata;}
+        ipfsLink = {
+            pinEnclosure: (ipfsHash, callback) => {callback();},
+            readManifest: (ipfsHash, callback) => {callback(mockManifest);},
+            readPayload: (ipfsHash, filename, callback) => {callback(mockPayload);}
+        };
+        metadataGatherer = {
+            gatherFor: (manifest, payload, callback) => {callback(mockMetadata);}
         };
         repository = {
             store: (metadata) => {}
         };
-        indexer = new Indexer(proven, retriever, repository);
+        indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
     });
 
     afterEach(function() {
@@ -40,10 +48,28 @@ describe('Indexer', function() {
         expect(proven.onDepositionPublished).to.have.been.called;
     });
 
-    it('asks the image retriever for the metadata', function() {
-        sinon.spy(retriever, 'getMetadataFor');
+    it('pins the enclosure', function() {
+        sinon.spy(ipfsLink, 'pinEnclosure');
         indexer.runOnce();
-        expect(retriever.getMetadataFor).to.have.been.calledWith(mockDeposition.ipfsHash);
+        expect(ipfsLink.pinEnclosure).to.have.been.calledWith(mockDeposition.ipfsHash);
+    });
+
+    it('loads the manifest', function() {
+        sinon.spy(ipfsLink, 'readManifest');
+        indexer.runOnce();
+        expect(ipfsLink.readManifest).to.have.been.calledWith(mockDeposition.ipfsHash);
+    });
+
+    it('loads the payload', function() {
+        sinon.spy(ipfsLink, 'readPayload');
+        indexer.runOnce();
+        expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
+    });
+
+    it('gathers metadata', function() {
+        sinon.spy(metadataGatherer, 'gatherFor');
+        indexer.runOnce();
+        expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, mockPayload);
     });
 
     it('stores the metadata into the repository', function() {
