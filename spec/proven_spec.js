@@ -22,7 +22,7 @@ describe('Proven', function() {
     });
 
     it('hooks into contract event', function() {
-        mockContract.watchEvent = sinon.spy();
+        sinon.spy(mockContract, 'watchEvent');
         var callback = () => {};
         proven.onDepositionPublished(callback);
         expect(mockContract.watchEvent).to.have.been.calledWith('DepositionPublished', callback);

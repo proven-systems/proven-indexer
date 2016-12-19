@@ -19,7 +19,7 @@ describe('Indexer', function() {
         options = {
             proven: {onDepositionPublished: (callback) => {callback(mockDeposition);}},
             retriever: {getMetadataFor: (ipfsHash) => {return mockMetadata;}},
-            repository: {store: sinon.spy()}
+            repository: {store: (metadata) => {}}
         };
         indexer = new Indexer(options);
     });
@@ -29,19 +29,19 @@ describe('Indexer', function() {
     });
 
     it('hooks the onDepositionPublished event on the contract', function() {
-        options.proven.onDepositionPublished = sinon.spy();
+        sinon.spy(options.proven, 'onDepositionPublished');
         indexer.runOnce();
         expect(options.proven.onDepositionPublished).to.have.been.called;
     });
 
     it('asks the image retriever for the metadata', function() {
-        options.retriever.getMetadataFor = sinon.spy();
+        sinon.spy(options.retriever, 'getMetadataFor');
         indexer.runOnce();
         expect(options.retriever.getMetadataFor).to.have.been.calledWith(mockDeposition.ipfsHash);
     });
 
     it('stores the metadata into the repository', function() {
-        options.repository.store = sinon.spy();
+        sinon.spy(options.repository, 'store');
         indexer.runOnce();
         expect(options.repository.store).to.have.been.calledWith(mockMetadata);
     });

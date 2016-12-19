@@ -41,17 +41,17 @@ describe('Retriever', function() {
         });
 
         it('pins the file in ipfs', function() {
-            ipfsLink.pinFileByHash = sinon.spy();
+            sinon.spy(ipfsLink, 'pinFileByHash');
             retriever.getMetadataFor('abcd', () => {});
             expect(ipfsLink.pinFileByHash).to.have.been.calledWith('abcd');
         });
         it('finds the local path to the file', function() {
-            ipfsLink.getLocalPathByHash = sinon.spy();
+            sinon.spy(ipfsLink, 'getLocalPathByHash');
             retriever.getMetadataFor('abcd', () => {});
             expect(ipfsLink.getLocalPathByHash).to.have.been.calledWith('abcd');
         });
         it('requests the metadata from the file', function() {
-            metadataGatherer.gatherFor = sinon.spy();
+            sinon.spy(metadataGatherer, 'gatherFor');
             retriever.getMetadataFor('abcd', () => {});
             expect(metadataGatherer.gatherFor).to.have.been.calledWith(filename);
         });
