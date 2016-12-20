@@ -11,14 +11,20 @@ function Indexer(_proven, _ipfsLink, _metadataGatherer, _repository) {
 }
 
 Indexer.prototype.runOnce = function() {
-    proven.onDepositionPublished(function(deposition) {
-        ipfsLink.pinEnclosure(deposition.ipfsHash, function() {
-            ipfsLink.readManifest(deposition.ipfsHash, function(manifest) {
-                ipfsLink.readPayload(deposition.ipfsHash, manifest.payloadFilePath, function(payload) {
-                    metadataGatherer.gatherFor(manifest, payload, function(metadata) {
-                        repository.store(metadata);
-                    });
-                });
+    return new Promise(function(resolve, reject) {
+        proven.onDepositionPublished(function(deposition) {
+            ipfsLink.pinEnclosure(deposition.ipfsHash).then(function() {
+                return ipfsLink.readManifest(deposition.ipfsHash);
+            }).then(function(manifest) {
+                return ipfsLink.readPayload(deposition.ipfsHash, manifest.payloadFilePath, manifest);
+            }).then(function(result) {
+                return metadataGatherer.gatherFor(result.manifest, result.payload);
+            }).then(function(metadata) {
+                return repository.store(metadata);
+            }).then(function() {
+                resolve();
+            }).catch(function(error) {
+                reject(error);
             });
         });
     });

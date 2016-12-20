@@ -1,8 +1,10 @@
 var chai = require('chai');
-var expect = chai.expect;
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
 chai.use(sinonChai);
+var chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+var expect = chai.expect;
 
 var Indexer = require('../src/indexer');
 
@@ -16,7 +18,7 @@ describe('Indexer', function() {
     var indexer;
     var mockDeposition = {ipfsHash: 'abcd'};
     var mockManifest = {payloadFilePath: '/path/to/file'};
-    var mockPayload = {};
+    var mockPayload = 'this is the payload';
     var mockMetadata = {filename: 'abcd', importantTag: 'efg'};
 
     beforeEach(function() {
@@ -25,12 +27,12 @@ describe('Indexer', function() {
             onDepositionPublished: (callback) => {callback(mockDeposition);}
         };
         ipfsLink = {
-            pinEnclosure: (ipfsHash, callback) => {callback();},
-            readManifest: (ipfsHash, callback) => {callback(mockManifest);},
-            readPayload: (ipfsHash, filename, callback) => {callback(mockPayload);}
+            pinEnclosure: (ipfsHash) => {return Promise.resolve();},
+            readManifest: (ipfsHash) => {return Promise.resolve(mockManifest);},
+            readPayload: (ipfsHash, filename, manifest) => {return Promise.resolve({manifest: manifest, payload: mockPayload});}
         };
         metadataGatherer = {
-            gatherFor: (manifest, payload, callback) => {callback(mockMetadata);}
+            gatherFor: (manifest, payload) => {return Promise.resolve(mockMetadata);}
         };
         repository = {
             store: (metadata) => {}
@@ -50,31 +52,64 @@ describe('Indexer', function() {
 
     it('pins the enclosure', function() {
         sinon.spy(ipfsLink, 'pinEnclosure');
-        indexer.runOnce();
-        expect(ipfsLink.pinEnclosure).to.have.been.calledWith(mockDeposition.ipfsHash);
+        indexer.runOnce().then(function() {
+            expect(ipfsLink.pinEnclosure).to.have.been.calledWith(mockDeposition.ipfsHash);
+        });
     });
 
     it('loads the manifest', function() {
         sinon.spy(ipfsLink, 'readManifest');
-        indexer.runOnce();
-        expect(ipfsLink.readManifest).to.have.been.calledWith(mockDeposition.ipfsHash);
+        indexer.runOnce().then(function() {
+            expect(ipfsLink.readManifest).to.have.been.calledWith(mockDeposition.ipfsHash);
+        });
     });
 
     it('loads the payload', function() {
         sinon.spy(ipfsLink, 'readPayload');
-        indexer.runOnce();
-        expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
+        indexer.runOnce().then(function() {
+            expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath, mockManifest);
+        });
     });
 
     it('gathers metadata', function() {
         sinon.spy(metadataGatherer, 'gatherFor');
-        indexer.runOnce();
-        expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, mockPayload);
+        indexer.runOnce().then(function() {
+            expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, mockPayload);
+        });
     });
 
     it('stores the metadata into the repository', function() {
         sinon.spy(repository, 'store');
-        indexer.runOnce();
-        expect(repository.store).to.have.been.calledWith(mockMetadata);
+        indexer.runOnce().then(function() {
+            expect(repository.store).to.have.been.calledWith(mockMetadata);
+        });
+    });
+
+    describe('on error', function() {
+
+        it('rejects if there was an error pinning the enclosure', function() {
+            ipfsLink.pinEnclosure = () => {return Promise.reject('Error pinning enclosure');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error pinning enclosure');
+        });
+
+        it('rejects if there was an error loading the manifest', function() {
+            ipfsLink.readManifest = () => {return Promise.reject('Error reading manifest');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error reading manifest');
+        });
+
+        it('rejects if there was an error loading the payload', function() {
+            ipfsLink.readPayload = () => {return Promise.reject('Error loading payload');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error loading payload');
+        });
+
+        it('rejects if there was an error gathering metadata', function() {
+            metadataGatherer.gatherFor = () => {return Promise.reject('Error gathering metadata');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error gathering metadata');
+        });
+
+        it('rejects if there was an error storing metadata', function() {
+            repository.store = () => {return Promise.reject('Error storing metadata');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error storing metadata');
+        });
     });
 });
