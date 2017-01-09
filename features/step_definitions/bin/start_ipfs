@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+ipfs config Addresses.Gateway /ip4/127.0.0.1/tcp/8082
+ipfs daemon
+sleep 3

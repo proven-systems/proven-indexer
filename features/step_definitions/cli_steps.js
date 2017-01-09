@@ -1,41 +1,108 @@
 const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
+const fs = require('fs');
+const path = require('path');
 const expect = require('chai').expect;
+const Web3 = require('web3');
+var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
-var Indexer = require('../../src/indexer');
-var Proven = require('../../src/proven');
-var Retriever = require('../../src/retriever');
-var Repository = require('../../src/repository');
-var Contract = require('../../src/contract');
+var provenAbi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'proven.abi'), 'utf8'));
+var provenAddress = '';
+var Proven = web3.eth.contract(provenAbi);
+var proven = Proven.at(provenAddress);
 
-var indexer;
-var abi = [{"constant":false,"inputs":[{"name":"_ipfs_hash","type":"bytes"}],"name":"publishDeposition","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"registry","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"},{"name":"_ipfs_hash","type":"bytes"}],"name":"publishDeposition","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_beneficiary","type":"address"}],"name":"dissolve","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"_registry","type":"address"}],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_deposition","type":"bytes32"},{"indexed":false,"name":"_deponent","type":"address"},{"indexed":false,"name":"_ipfs_hash","type":"bytes"}],"name":"DepositionPublished","type":"event"}];
-var address = '0xece7719790f26f4cac21f9ccfc27e8e5b462e6b7';
+function sleep(delay) {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+}
 
 module.exports = function() {
-    this.Given("an indexer", function(callback) {
-        var Web3 = require('web3');
-        var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-        var contractDefinition = web3.eth.contract(abi);
-        var web3Contract = contractDefinition.at(address);
-        var options = {
-            proven: new Proven(new Contract(web3Contract)),
-            retriever: new Retriever(),
-            repository: new Repository()
-        };
-        indexer = new Indexer(options);
+    this.Given("an Ethereum blockchain in a known state", function(callback) {
+        exec(path.resolve(__dirname, 'bin/reset_dev_chain'), function(error, stdout, stderr) {
+            if (error) {
+                callback(error);
+            } else {
+                callback();
+            }
+        });
+    });
+
+    this.Given("a running Ethereum client", function(callback) {
+        exec(path.resolve(__dirname, 'bin/start_dev_chain'), function(error, stdout, stderr) {
+            if (error) {
+                callback(error);
+            } else {
+                callback();
+            }
+        });
+    });
+
+    this.Given('a running miner', function(callback) {
+        const child = spawn(path.resolve(__dirname, 'bin/start_ethminer'), [], {
+            detached: true,
+            stdio: 'ignore'
+        });
+        child.unref();
         callback();
+    });
+
+    this.Given('an initialized IPFS client', function(callback) {
+        exec('ipfs init', function(error, stdout, stderr) {
+            if (error) {
+                if (error.toString().search(/ipfs configuration file already exists/) != -1) {
+                    callback();
+                } else {
+                    callback(error);
+                }
+            } else {
+                callback();
+            }
+        });
+    });
+
+    this.Given('a running IPFS daemon', function(callback) {
+        const child = spawn(path.resolve(__dirname, 'bin/start_ipfs'), [], {
+            detached: true,
+            stdio: 'ignore'
+        });
+        child.unref();
+        sleep(3000).then(function() {
+            callback();
+        });
+    });
+
+    this.Given('a published Proven enclosure', function(callback) {
+        exec('ipfs add -r ' + path.resolve(__dirname, 'res/sample_enclosure'), function(error, stdout, stderr) {
+            if (error) {
+                callback(error);
+            } else {
+                this.ipfsHash = stdout;
+                callback();
+            }
+        });
     });
 
     this.When('I run the indexer', function(callback) {
-        indexer.runOnce();
-        callback();
+        exec('node index.js --once', (error, stdout, stderr) => {
+            if (error) {
+                callback(error);
+            } else {
+                callback();
+            }
+        });
     });
 
     this.When('a deposition is published', function(callback) {
-        callback(null, 'pending');
+        proven.publishDeposition.sendTransaction(this.ipfsHash, {from: fromAddress}, function(error, txHash) {
+            if (error) {
+                callback(error);
+            } else {
+                // wait for transaction to be mined
+                callback();
+            }
+        });
     });
 
-    this.Then('the deposition metadata should be in the database', function(callback) {
+    this.Then('the deposition metadata should be in the database (after a slight delay)', function(callback) {
         callback(null, 'pending');
     });
 }

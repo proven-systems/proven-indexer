@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+if [ -z "$DEV_CHAIN_ROOT" ]; then
+    echo "DEV_CHAIN_ROOT is unset"
+    exit 1
+fi
+
+rm -rf "$DEV_CHAIN_ROOT"/db/*
+cp -R "$DEV_CHAIN_ROOT"/var/db/* "$DEV_CHAIN_ROOT"/db

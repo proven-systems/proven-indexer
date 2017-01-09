@@ -1,0 +1,60 @@
+#! /usr/bin/env bash
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -g|--geth)
+            GETH="--geth"
+            shift
+            ;;
+        -t|--trace)
+            TRACE="-lrpc=trace"
+            shift
+            ;;
+        -i|--initialize)
+            INITIALIZE=1
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$DEV_CHAIN_ROOT" ]; then
+    echo "DEV_CHAIN_ROOT is unset"
+    exit 1
+fi
+
+GENESIS="$DEV_CHAIN_ROOT"/etc/genesis.json
+DB_PATH="$DEV_CHAIN_ROOT"/db
+KEYS_PATH="$DEV_CHAIN_ROOT"/keys
+
+mkdir -p "$DB_PATH"
+mkdir -p "$KEYS_PATH"
+
+if [ -z "$INITIALIZE" ]; then
+
+    if [ ! -f "$DEV_CHAIN_ROOT"/etc/coinbase ]; then
+        echo "$DEV_CHAIN_ROOT/etc/coinbase doesn't exist"
+        exit 1
+    fi
+
+    if [ ! -f "$DEV_CHAIN_ROOT"/etc/coinbase_password ]; then
+        echo "$DEV_CHAIN_ROOT/etc/coinbase_password doesn't exist"
+        exit 1
+    fi
+
+    if [ $(stat -c %a "$DEV_CHAIN_ROOT"/etc/coinbase_password) != 400 ]; then
+        echo "Set permissions on $DEV_CHAIN_ROOT/etc/coinbase_password to 400"
+        exit 1
+    fi
+
+    COINBASE=`cat "$DEV_CHAIN_ROOT"/etc/coinbase`
+    PASSWORD="$DEV_CHAIN_ROOT"/etc/coinbase_password
+
+    parity daemon "$DEV_CHAIN_ROOT/parity.pid" --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --author $COINBASE --jsonrpc-cors "*" --force-ui --unlock $COINBASE --password "$PASSWORD" --gas-floor-target 60000000 --gasprice 20000000000 $GETH $TRACE
+else
+    parity daemon --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --jsonrpc-cors "*" --force-ui $GETH $TRACE
+fi

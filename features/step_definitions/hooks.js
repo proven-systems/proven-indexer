@@ -1,11 +1,17 @@
+const exec = require('child_process').exec;
+
 module.exports = function() {
     this.Before(function() {
-        console.log('Before');
         return true;
     });
 
     this.After(function() {
-        console.log('After');
+        exec("kill `ps -ef | grep parity | awk '{print $2}'`", function(error, stdout, stderr) {
+        });
+        exec("kill `ps -ef | grep ethminer | awk '{print $2}'`", function(error, stdout, stderr) {
+        });
+        exec("kill `ps -ef | grep 'ipfs daemon' | awk '{print $2}'`", function(error, stdout, stderr) {
+        });
         return true;
     });
 }
