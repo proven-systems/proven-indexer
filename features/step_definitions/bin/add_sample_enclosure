@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+ipfs add -r "$DEV_CHAIN_ROOT"/res/sample_enclosure | tail -1 | awk '{print $2}'

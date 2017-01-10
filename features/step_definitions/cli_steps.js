@@ -3,19 +3,24 @@ const spawn = require('child_process').spawn;
 const fs = require('fs');
 const path = require('path');
 const expect = require('chai').expect;
+const multihash = require('multi-hash');
 const Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 var provenAbi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'proven.abi'), 'utf8'));
-var provenAddress = '';
+var provenAddress = '0x3ff76874e26e00154c81854dab23d594e7fef480';
 var Proven = web3.eth.contract(provenAbi);
 var proven = Proven.at(provenAddress);
+var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
 
 function sleep(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 module.exports = function() {
+
+    var ipfsHash;
+
     this.Given("an Ethereum blockchain in a known state", function(callback) {
         exec(path.resolve(__dirname, 'bin/reset_dev_chain'), function(error, stdout, stderr) {
             if (error) {
@@ -27,7 +32,7 @@ module.exports = function() {
     });
 
     this.Given("a running Ethereum client", function(callback) {
-        exec(path.resolve(__dirname, 'bin/start_dev_chain'), function(error, stdout, stderr) {
+        exec(path.resolve(__dirname, 'bin/start_dev_chain --daemon --geth'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
@@ -71,33 +76,40 @@ module.exports = function() {
     });
 
     this.Given('a published Proven enclosure', function(callback) {
-        exec('ipfs add -r ' + path.resolve(__dirname, 'res/sample_enclosure'), function(error, stdout, stderr) {
+        exec(path.resolve(__dirname, 'bin/add_sample_enclosure'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
-                this.ipfsHash = stdout;
+                ipfsHash = multihash.decode(stdout.toString().trim()).toString('hex');
                 callback();
             }
         });
     });
 
     this.When('I run the indexer', function(callback) {
-        exec('node index.js --once', (error, stdout, stderr) => {
-            if (error) {
-                callback(error);
-            } else {
-                callback();
-            }
+        const child = spawn('node index.js --once', [], {
+            detached: true,
+            stdio: 'ignore'
         });
+        child.unref();
+        callback();
     });
 
-    this.When('a deposition is published', function(callback) {
-        proven.publishDeposition.sendTransaction(this.ipfsHash, {from: fromAddress}, function(error, txHash) {
+    this.When('a deposition is published', {timeout: 30 * 1000}, function(callback) {
+        proven.publishDeposition.sendTransaction(ipfsHash, {from: fromAddress}, function(error, txHash) {
             if (error) {
                 callback(error);
             } else {
-                // wait for transaction to be mined
-                callback();
+                var filter = web3.eth.filter('latest');
+                filter.watch(function(error, blockHash) {
+                    if (!error) {
+                        var tx = web3.eth.getTransaction(txHash);
+                        if (tx.blockHash) {
+                            callback();
+                            filter.stopWatching();
+                        }
+                    }
+                });
             }
         });
     });

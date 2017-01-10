@@ -16,6 +16,10 @@ do
             INITIALIZE=1
             shift
             ;;
+        -d|--daemon)
+            DAEMON=1
+            shift
+            ;;
         *)
             shift
             ;;
@@ -33,6 +37,12 @@ KEYS_PATH="$DEV_CHAIN_ROOT"/keys
 
 mkdir -p "$DB_PATH"
 mkdir -p "$KEYS_PATH"
+
+if [ -z "$DAEMON" ]; then
+    DAEMON_OPTIONS=""
+else
+    DAEMON_OPTIONS="daemon $DEV_CHAIN_ROOT/parity.pid"
+fi
 
 if [ -z "$INITIALIZE" ]; then
 
@@ -54,7 +64,7 @@ if [ -z "$INITIALIZE" ]; then
     COINBASE=`cat "$DEV_CHAIN_ROOT"/etc/coinbase`
     PASSWORD="$DEV_CHAIN_ROOT"/etc/coinbase_password
 
-    parity daemon "$DEV_CHAIN_ROOT/parity.pid" --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --author $COINBASE --jsonrpc-cors "*" --force-ui --unlock $COINBASE --password "$PASSWORD" --gas-floor-target 60000000 --gasprice 20000000000 $GETH $TRACE
+    parity $DAEMON_OPTIONS --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --author $COINBASE --jsonrpc-cors "*" --force-ui --unlock $COINBASE --password "$PASSWORD" --gas-floor-target 60000000 --gasprice 20000000000 $GETH $TRACE
 else
-    parity daemon --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --jsonrpc-cors "*" --force-ui $GETH $TRACE
+    parity $DAEMON_OPTIONS --chain "$GENESIS" --db-path "$DB_PATH" --keys-path "$KEYS_PATH" --jsonrpc-cors "*" --force-ui $GETH $TRACE
 fi

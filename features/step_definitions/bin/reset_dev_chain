@@ -5,5 +5,7 @@ if [ -z "$DEV_CHAIN_ROOT" ]; then
     exit 1
 fi
 
-rm -rf "$DEV_CHAIN_ROOT"/db/*
-cp -R "$DEV_CHAIN_ROOT"/var/db/* "$DEV_CHAIN_ROOT"/db
+rm -rf "$DEV_CHAIN_ROOT"/db
+pushd "$DEV_CHAIN_ROOT"
+tar -zxvf "$DEV_CHAIN_ROOT"/var/db/db.tgz
+popd
