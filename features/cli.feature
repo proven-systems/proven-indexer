@@ -12,4 +12,4 @@ Feature: Indexer
         And a published Proven enclosure
         When I run the indexer
         And a deposition is published
-        Then the deposition metadata should be in the database (after a slight delay)
+        Then the deposition metadata should be in the database

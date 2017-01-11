@@ -114,7 +114,26 @@ module.exports = function() {
         });
     });
 
-    this.Then('the deposition metadata should be in the database (after a slight delay)', function(callback) {
-        callback(null, 'pending');
+    this.Then('the deposition metadata should be in the database', function(callback) {
+        var MongoClient = require('mongodb').MongoClient;
+        MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
+            if (error) {
+                callback(error);
+            } else {
+                db.collection('depositions').find({'ipfsHash': ipfsHash}).toArray(function(error, docs) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if (docs.length == 0) {
+                            callback('No documents found');
+                        } else if (docs.length > 1) {
+                            callback('Too many documents found');
+                        } else {
+                            callback();
+                        }
+                    }
+                });
+            }
+        });
     });
 }
