@@ -30,6 +30,7 @@
     "sinon-chai": "^2.8.0"
   },
   "dependencies": {
+    "ipfs-api": "^12.1.4",
     "mongodb": "^2.2.20",
     "multi-hash": "^0.1.1",
     "web3": "^0.17.0-beta"

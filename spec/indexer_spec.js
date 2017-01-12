@@ -44,44 +44,63 @@ describe('Indexer', function() {
         sandbox.restore();
     });
 
-    it('hooks the onDepositionPublished event on the contract', function() {
+    it('hooks the onDepositionPublished event on the contract', function(done) {
         sinon.spy(proven, 'onDepositionPublished');
-        indexer.runOnce();
-        expect(proven.onDepositionPublished).to.have.been.called;
+        indexer.runOnce().then(function() {
+            expect(proven.onDepositionPublished).to.have.been.called;
+            done();
+        }).catch(function(error) {
+            done(error);
+        });
     });
 
-    it('pins the enclosure', function() {
+    it('pins the enclosure', function(done) {
         sinon.spy(ipfsLink, 'pinEnclosure');
         indexer.runOnce().then(function() {
             expect(ipfsLink.pinEnclosure).to.have.been.calledWith(mockDeposition.ipfsHash);
+            done();
+        }).catch(function(error) {
+            done(error);
         });
     });
 
-    it('loads the manifest', function() {
+    it('loads the manifest', function(done) {
         sinon.spy(ipfsLink, 'readManifest');
         indexer.runOnce().then(function() {
             expect(ipfsLink.readManifest).to.have.been.calledWith(mockDeposition.ipfsHash);
+            done();
+        }).catch(function(error) {
+            done(error);
         });
     });
 
-    it('loads the payload', function() {
+    it('loads the payload', function(done) {
         sinon.spy(ipfsLink, 'readPayload');
         indexer.runOnce().then(function() {
             expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath, mockManifest);
+            done();
+        }).catch(function(error) {
+            done(error);
         });
     });
 
-    it('gathers metadata', function() {
+    it('gathers metadata', function(done) {
         sinon.spy(metadataGatherer, 'gatherFor');
         indexer.runOnce().then(function() {
             expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, mockPayload);
+            done();
+        }).catch(function(error) {
+            done(error);
         });
     });
 
-    it('stores the metadata into the repository', function() {
+    it('stores the metadata into the repository', function(done) {
         sinon.spy(repository, 'store');
         indexer.runOnce().then(function() {
             expect(repository.store).to.have.been.calledWith(mockMetadata);
+            done();
+        }).catch(function(error) {
+            done(error);
         });
     });
 
