@@ -10,7 +10,6 @@ var Indexer = require('../src/indexer');
 
 describe('Indexer', function() {
 
-    var sandbox;
     var proven;
     var ipfsLink;
     var metadataGatherer;
@@ -22,7 +21,6 @@ describe('Indexer', function() {
     var mockMetadata = {filename: 'abcd', importantTag: 'efg'};
 
     beforeEach(function() {
-        sandbox = sinon.sandbox.create();
         proven = {
             onDepositionPublished: (callback) => {callback(mockDeposition);}
         };
@@ -38,10 +36,6 @@ describe('Indexer', function() {
             store: (metadata) => {}
         };
         indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
-    });
-
-    afterEach(function() {
-        sandbox.restore();
     });
 
     it('hooks the onDepositionPublished event on the contract', function(done) {
