@@ -32,10 +32,12 @@ repository = new Repository();
 indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
 
 if (runOnce) {
+    console.log('Running once!!!');
     indexer.runOnce().catch(function(error) {
         console.log(error);
     });
 } else {
+    console.log('Here?!?!');
     indexer.run().catch(function(error) {
         console.log(error);
     });
