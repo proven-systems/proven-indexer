@@ -76,4 +76,43 @@ describe('IpfsLink', function() {
             });
         });
     });
+
+    describe('readPayload', function() {
+
+        const dummyPayload = 'This is the payload';
+        var payloadStream;
+        var mockIpfs;
+        var ipfsLink;
+
+        beforeEach(function() {
+            payloadStream = new Readable;
+            payloadStream.push(dummyPayload);
+            payloadStream.push(null);
+
+            mockIpfs = {
+                cat: (ipfsHash) => { return Promise.resolve(payloadStream); }
+            };
+
+            ipfsLink = new IpfsLink(mockIpfs);
+        });
+
+        it('defers to the ipfs module', function(done) {
+            sinon.spy(mockIpfs, 'cat');
+            ipfsLink.readPayload('abcd', 'filename').then(function(payload) {
+                expect(mockIpfs.cat).to.have.been.calledWith('abcd/content/filename');
+                done();
+            }).catch(function(error) {
+                done(error);
+            });
+        });
+
+        it('returns a buffer of the file', function(done) {
+            ipfsLink.readPayload('abcd', 'filename').then(function(payload) {
+                expect(Buffer.compare(payload, new Buffer(dummyPayload))).to.eq(0);
+                done();
+            }).catch(function(error) {
+                done(error);
+            });
+        });
+    });
 });
