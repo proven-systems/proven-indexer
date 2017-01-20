@@ -3,6 +3,9 @@
 var path = require('path');
 
 var Web3 = require('web3');
+
+var IPFS = require('ipfs-api');
+var ipfs = new IPFS();
 var Contract = require(path.join(__dirname, 'src/contract'));
 var Proven = require(path.join(__dirname, 'src/proven'));
 var IpfsLink = require(path.join(__dirname, 'src/ipfs_link'));
@@ -25,20 +28,24 @@ var contractDefinition = web3.eth.contract(abi);
 var web3Contract = contractDefinition.at(address);
 
 proven = new Proven(new Contract(web3Contract));
-ipfsLink = new IpfsLink();
+ipfsLink = new IpfsLink(ipfs);
 metadataGatherer = new MetadataGatherer();
 repository = new Repository();
 
 indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
 
 if (runOnce) {
-    console.log('Running once!!!');
-    indexer.runOnce().catch(function(error) {
+    indexer.runOnce().then(function() {
+        process.exit();
+    }).catch(function(error) {
         console.log(error);
+        process.exit(1);
     });
 } else {
-    console.log('Here?!?!');
-    indexer.run().catch(function(error) {
+    indexer.run().then(function() {
+        process.exit();
+    }).catch(function(error) {
         console.log(error);
+        process.exit(1);
     });
 }

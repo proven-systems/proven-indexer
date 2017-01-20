@@ -22,12 +22,12 @@ describe('Indexer', function() {
 
     beforeEach(function() {
         proven = {
-            onDepositionPublished: (callback) => {callback(mockDeposition);}
+            onDepositionPublished: (callback) => {callback(null, mockDeposition);}
         };
         ipfsLink = {
             pinEnclosure: (ipfsHash) => {return Promise.resolve();},
             readManifest: (ipfsHash) => {return Promise.resolve(mockManifest);},
-            readPayload: (ipfsHash, filename, manifest) => {return Promise.resolve({manifest: manifest, payload: mockPayload});}
+            readPayload: (ipfsHash, filename) => {return Promise.resolve({payload: mockPayload});}
         };
         metadataGatherer = {
             gatherFor: (manifest, payload) => {return Promise.resolve(mockMetadata);}
@@ -71,7 +71,7 @@ describe('Indexer', function() {
     it('loads the payload', function(done) {
         sinon.spy(ipfsLink, 'readPayload');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath, mockManifest);
+            expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
             done();
         }).catch(function(error) {
             done(error);
