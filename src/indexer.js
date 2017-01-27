@@ -21,9 +21,9 @@ Indexer.prototype.runOnce = function() {
                     return ipfsLink.readManifest(deposition.ipfsHash);
                 }).then(function(_manifest) {
                     manifest = _manifest;
-                    return ipfsLink.readPayload(deposition.ipfsHash, manifest.payloadFilePath);
-                }).then(function(result) {
-                    return metadataGatherer.gatherFor(manifest, result.payload);
+                    return ipfsLink.getPayload(deposition.ipfsHash, manifest.payloadFilePath);
+                }).then(function(payloadPath) {
+                    return metadataGatherer.gatherFor(manifest, payloadPath);
                 }).then(function(metadata) {
                     return repository.store(metadata);
                 }).then(function() {

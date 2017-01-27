@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 var ipfs;
 
 function IpfsLink(_ipfs) {
@@ -32,15 +34,14 @@ IpfsLink.prototype.readManifest = function(ipfsHash) {
     });
 };
 
-IpfsLink.prototype.readPayload = function(ipfsHash, filename) {
+IpfsLink.prototype.getPayload = function(ipfsHash, filename) {
     return new Promise(function(resolve, reject) {
+        var filePath = '/tmp/' + filename;
+        var fileStream = fs.createWriteStream(filePath);
         ipfs.cat(ipfsHash + '/content/' + filename).then(function(stream) {
-            let buffer = new Buffer([]);
-            stream.on('data', function(chunk) {
-                buffer = Buffer.concat([buffer, chunk]);
-            });
+            stream.pipe(fileStream);
             stream.on('end', function() {
-                resolve(buffer);
+                resolve(filePath);
             });
         }).catch(function(error) {
             reject(error);

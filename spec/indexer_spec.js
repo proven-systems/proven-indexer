@@ -27,7 +27,7 @@ describe('Indexer', function() {
         ipfsLink = {
             pinEnclosure: (ipfsHash) => {return Promise.resolve();},
             readManifest: (ipfsHash) => {return Promise.resolve(mockManifest);},
-            readPayload: (ipfsHash, filename) => {return Promise.resolve({payload: mockPayload});}
+            getPayload: (ipfsHash, filename) => {return Promise.resolve('/path/to/payload');}
         };
         metadataGatherer = {
             gatherFor: (manifest, payload) => {return Promise.resolve(mockMetadata);}
@@ -69,9 +69,9 @@ describe('Indexer', function() {
     });
 
     it('loads the payload', function(done) {
-        sinon.spy(ipfsLink, 'readPayload');
+        sinon.spy(ipfsLink, 'getPayload');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.readPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
+            expect(ipfsLink.getPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
             done();
         }).catch(function(error) {
             done(error);
@@ -81,7 +81,7 @@ describe('Indexer', function() {
     it('gathers metadata', function(done) {
         sinon.spy(metadataGatherer, 'gatherFor');
         indexer.runOnce().then(function() {
-            expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, mockPayload);
+            expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, '/path/to/payload');
             done();
         }).catch(function(error) {
             done(error);
@@ -111,8 +111,8 @@ describe('Indexer', function() {
         });
 
         it('rejects if there was an error loading the payload', function() {
-            ipfsLink.readPayload = () => {return Promise.reject('Error loading payload');}
-            expect(indexer.runOnce()).to.be.rejectedWith('Error loading payload');
+            ipfsLink.getPayload = () => {return Promise.reject('Error determining payload path');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error determining payload path');
         });
 
         it('rejects if there was an error gathering metadata', function() {

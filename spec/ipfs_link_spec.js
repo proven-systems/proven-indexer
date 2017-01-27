@@ -77,7 +77,7 @@ describe('IpfsLink', function() {
         });
     });
 
-    describe('readPayload', function() {
+    describe('getPayload', function() {
 
         const dummyPayload = 'This is the payload';
         var payloadStream;
@@ -98,7 +98,7 @@ describe('IpfsLink', function() {
 
         it('defers to the ipfs module', function(done) {
             sinon.spy(mockIpfs, 'cat');
-            ipfsLink.readPayload('abcd', 'filename').then(function(payload) {
+            ipfsLink.getPayload('abcd', 'filename').then(function(payloadPath) {
                 expect(mockIpfs.cat).to.have.been.calledWith('abcd/content/filename');
                 done();
             }).catch(function(error) {
@@ -106,9 +106,9 @@ describe('IpfsLink', function() {
             });
         });
 
-        it('returns a buffer of the file', function(done) {
-            ipfsLink.readPayload('abcd', 'filename').then(function(payload) {
-                expect(Buffer.compare(payload, new Buffer(dummyPayload))).to.eq(0);
+        it('returns the path to the file', function(done) {
+            ipfsLink.getPayload('abcd', 'filename').then(function(payloadPath) {
+                expect(payloadPath).to.eq('/tmp/filename');
                 done();
             }).catch(function(error) {
                 done(error);
