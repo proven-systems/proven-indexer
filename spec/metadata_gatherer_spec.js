@@ -27,13 +27,13 @@ describe('MetadataGatherer', function() {
                 PreviousFileHashes: '84C5B7886D243D0ADBB3C707B629F3C0',
                 PreviousIPFSHash: 'Qmb7Uwc39Q7YpPsfkWj54S2rMgdV6D845Sgr75GyxZfV4W'
             };
-            mockPayload = 12;
+            mockPayloadPath = 'features/step_definitions/res/sample_enclosure/content/Louie.jpeg';
 
             metadataGatherer = new MetadataGatherer();
         });
 
         it('stores the filename into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.filename).to.eq(mockManifest.FileName);
                 done();
             }).catch(function(error) {
@@ -42,7 +42,7 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the ethereum blockchain info into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.ethereumBlockHash).to.eq(mockManifest.EthereumBlockHash);
                 expect(metadata.ethereumBlockNumber).to.eq(mockManifest.EthereumBlockNumber);
                 done();
@@ -52,7 +52,7 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the guid into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.guid).to.eq(mockManifest.GUID);
                 done();
             }).catch(function(error) {
@@ -61,7 +61,7 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the Bitcoin blockchain info into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.bitcoinBlockHash).to.eq(mockManifest.BitcoinBlockHash);
                 expect(metadata.bitcoinBlockNumber).to.eq(mockManifest.BitcoinBlockNumber);
                 done();
@@ -71,7 +71,7 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the file hashes into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.fileHashes).to.eq(mockManifest.FileHashes);
                 done();
             }).catch(function(error) {
@@ -80,7 +80,7 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the previous file hashes into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.previousFileHashes).to.eq(mockManifest.PreviousFileHashes);
                 done();
             }).catch(function(error) {
@@ -89,8 +89,29 @@ describe('MetadataGatherer', function() {
         });
 
         it('stores the previous IPFS hash into the metadata', function(done) {
-            metadataGatherer.gatherFor(mockManifest, mockPayload).then(function(metadata) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
                 expect(metadata.previousIpfsHash).to.eq(mockManifest.PreviousIPFSHash);
+                done();
+            }).catch(function(error) {
+                done(error);
+            });
+        });
+
+        it('stores the results of exiftool into the metadata', function(done) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
+                expect(metadata).to.have.property('exiftool');
+                done();
+            }).catch(function(error) {
+                done(error);
+            });
+        });
+
+        it('extracts image properties into the metadata', function(done) {
+            metadataGatherer.gatherFor(mockManifest, mockPayloadPath).then(function(metadata) {
+                expect(metadata.createdAt).to.eq('2016:12:01 17:59:16');
+                expect(metadata.cameraModel).to.eq('HD Pro Webcam C920');
+                expect(metadata.imageWidth).to.eq(1920);
+                expect(metadata.imageHeight).to.eq(1080);
                 done();
             }).catch(function(error) {
                 done(error);
