@@ -13,6 +13,8 @@ var Proven = web3.eth.contract(provenAbi);
 var proven = Proven.at(provenAddress);
 var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
 
+var devChainPath = path.resolve(__dirname, '../../dev_chain');
+
 function sleep(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
@@ -22,7 +24,7 @@ module.exports = function() {
     var ipfsHash;
 
     this.Given("an Ethereum blockchain in a known state", function(callback) {
-        exec(path.resolve(__dirname, 'bin/reset_dev_chain'), function(error, stdout, stderr) {
+        exec(path.resolve(devChainPath, 'bin/reset_dev_chain'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
@@ -32,7 +34,7 @@ module.exports = function() {
     });
 
     this.Given("a running Ethereum client", {timeout: 10 * 1000}, function(callback) {
-        exec(path.resolve(__dirname, 'bin/start_dev_chain --daemon --geth'), function(error, stdout, stderr) {
+        exec(path.resolve(devChainPath, 'bin/start_dev_chain --daemon --geth'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
@@ -44,7 +46,7 @@ module.exports = function() {
     });
 
     this.Given('a running miner', function(callback) {
-        const child = spawn(path.resolve(__dirname, 'bin/start_ethminer'), [], {
+        const child = spawn(path.resolve(devChainPath, 'bin/start_ethminer'), [], {
             detached: true,
             stdio: 'ignore'
         });
@@ -69,7 +71,7 @@ module.exports = function() {
     });
 
     this.Given('a running IPFS daemon', function(callback) {
-        const child = spawn(path.resolve(__dirname, 'bin/start_ipfs'), [], {
+        const child = spawn(path.resolve(devChainPath, 'bin/start_ipfs'), [], {
             detached: true,
             stdio: 'ignore'
         });
@@ -80,7 +82,7 @@ module.exports = function() {
     });
 
     this.Given('a published Proven enclosure', function(callback) {
-        exec(path.resolve(__dirname, 'bin/add_sample_enclosure'), function(error, stdout, stderr) {
+        exec(path.resolve(devChainPath, 'bin/add_sample_enclosure'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
@@ -99,7 +101,7 @@ module.exports = function() {
     });
 
     this.When('a deposition is published', {timeout: 20*1000}, function(callback) {
-        const child = spawn('node', ['add_deposition.js', ipfsHash], {
+        const child = spawn('node', [path.resolve(devChainPath, 'bin/add_deposition.js'), ipfsHash], {
             stdio: 'ignore'
         });
         child.unref();

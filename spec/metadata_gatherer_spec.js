@@ -32,7 +32,7 @@ describe('MetadataGatherer', function() {
                 PreviousFileHashes: '84C5B7886D243D0ADBB3C707B629F3C0',
                 PreviousIPFSHash: 'Qmb7Uwc39Q7YpPsfkWj54S2rMgdV6D845Sgr75GyxZfV4W'
             };
-            mockPayloadPath = 'features/step_definitions/res/sample_enclosure/content/Louie.jpeg';
+            mockPayloadPath = 'dev_chain/res/sample_enclosure/content/Louie.jpeg';
 
             metadataGatherer = new MetadataGatherer();
         });
