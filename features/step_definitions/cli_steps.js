@@ -31,12 +31,14 @@ module.exports = function() {
         });
     });
 
-    this.Given("a running Ethereum client", function(callback) {
+    this.Given("a running Ethereum client", {timeout: 10 * 1000}, function(callback) {
         exec(path.resolve(__dirname, 'bin/start_dev_chain --daemon --geth'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
             } else {
-                callback();
+                sleep(5000).then(function() {
+                    callback();
+                });
             }
         });
     });
@@ -47,7 +49,9 @@ module.exports = function() {
             stdio: 'ignore'
         });
         child.unref();
-        callback();
+        sleep(2000).then(function() {
+            callback();
+        });
     });
 
     this.Given('an initialized IPFS client', function(callback) {
@@ -80,60 +84,52 @@ module.exports = function() {
             if (error) {
                 callback(error);
             } else {
-                ipfsHash = multihash.decode(stdout.toString().trim()).toString('hex');
+                ipfsHash = stdout.toString().trim();
                 callback();
             }
         });
     });
 
     this.When('I run the indexer', function(callback) {
-        const child = spawn('node index.js --once', [], {
-            detached: true,
+        const child = spawn('node', ['index.js', '--once'], {
             stdio: 'ignore'
         });
         child.unref();
         callback();
     });
 
-    this.When('a deposition is published', {timeout: 30 * 1000}, function(callback) {
-        proven.publishDeposition.sendTransaction(ipfsHash, {from: fromAddress}, function(error, txHash) {
-            if (error) {
-                callback(error);
-            } else {
-                var filter = web3.eth.filter('latest');
-                filter.watch(function(error, blockHash) {
-                    if (!error) {
-                        var tx = web3.eth.getTransaction(txHash);
-                        if (tx.blockHash) {
-                            callback();
-                            filter.stopWatching();
-                        }
-                    }
-                });
-            }
+    this.When('a deposition is published', {timeout: 20*1000}, function(callback) {
+        const child = spawn('node', ['add_deposition.js', ipfsHash], {
+            stdio: 'ignore'
+        });
+        child.unref();
+        sleep(5000).then(function() {
+            callback();
         });
     });
 
-    this.Then('the deposition metadata should be in the database', function(callback) {
-        var MongoClient = require('mongodb').MongoClient;
-        MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
-            if (error) {
-                callback(error);
-            } else {
-                db.collection('depositions').find({'ipfsHash': ipfsHash}).toArray(function(error, docs) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        if (docs.length == 0) {
-                            callback('No documents found');
-                        } else if (docs.length > 1) {
-                            callback('Too many documents found');
+    this.Then('the deposition metadata should be in the database', {timeout: 30*1000}, function(callback) {
+        sleep(20000).then(function() {
+            var MongoClient = require('mongodb').MongoClient;
+            MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
+                if (error) {
+                    callback(error);
+                } else {
+                    db.collection('depositions').find({'ipfsHash': ipfsHash}).toArray(function(error, docs) {
+                        if (error) {
+                            callback(error);
                         } else {
-                            callback();
+                            if (docs.length == 0) {
+                                callback('No documents found');
+                            } else if (docs.length > 1) {
+                                callback('Too many documents found');
+                            } else {
+                                callback();
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
     });
 }

@@ -1,8 +1,10 @@
 #! /usr/bin/env node
 
+const fs = require('fs');
 var path = require('path');
 
 var Web3 = require('web3');
+var MongoClient = require('mongodb').MongoClient;
 
 var IPFS = require('ipfs-api');
 var ipfs = new IPFS();
@@ -13,9 +15,6 @@ var MetadataGatherer = require(path.join(__dirname, 'src/metadata_gatherer'));
 var Repository = require(path.join(__dirname, 'src/repository'));
 var Indexer = require(path.join(__dirname, 'src/indexer'));
 
-var abi = [{"constant":false,"inputs":[{"name":"_ipfs_hash","type":"bytes"}],"name":"publishDeposition","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"registry","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"},{"name":"_ipfs_hash","type":"bytes"}],"name":"publishDeposition","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_beneficiary","type":"address"}],"name":"dissolve","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"_registry","type":"address"}],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_deposition","type":"bytes32"},{"indexed":false,"name":"_deponent","type":"address"},{"indexed":false,"name":"_ipfs_hash","type":"bytes"}],"name":"DepositionPublished","type":"event"}];
-var address = '0xece7719790f26f4cac21f9ccfc27e8e5b462e6b7';
-
 var runOnce = false;
 process.argv.forEach(function(value) {
     if (value === '--once') {
@@ -24,28 +23,39 @@ process.argv.forEach(function(value) {
 });
 
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+var abi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'features/step_definitions/proven.abi'), 'utf8'));
 var contractDefinition = web3.eth.contract(abi);
+var address = '0x3ff76874e26e00154c81854dab23d594e7fef480';
 var web3Contract = contractDefinition.at(address);
 
 proven = new Proven(new Contract(web3Contract));
+
 ipfsLink = new IpfsLink(ipfs);
 metadataGatherer = new MetadataGatherer();
-repository = new Repository();
 
-indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
-
-if (runOnce) {
-    indexer.runOnce().then(function() {
-        process.exit();
-    }).catch(function(error) {
+MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
+    if (error) {
         console.log(error);
         process.exit(1);
-    });
-} else {
-    indexer.run().then(function() {
-        process.exit();
-    }).catch(function(error) {
-        console.log(error);
-        process.exit(1);
-    });
-}
+    }
+
+    repository = new Repository(db);
+
+    indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, console);
+
+    if (runOnce) {
+        indexer.runOnce().then(function() {
+            process.exit();
+        }).catch(function(error) {
+            console.log(error);
+            process.exit(1);
+        });
+    } else {
+        indexer.run().then(function() {
+            process.exit();
+        }).catch(function(error) {
+            console.log(error);
+            process.exit(1);
+        });
+    }
+});

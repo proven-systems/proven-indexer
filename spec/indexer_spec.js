@@ -1,7 +1,6 @@
 var chai = require('chai');
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
-chai.use(sinonChai);
+var spies = require('chai-spies');
+chai.use(spies);
 var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 var expect = chai.expect;
@@ -16,7 +15,7 @@ describe('Indexer', function() {
     var repository;
     var indexer;
     var mockDeposition = {ipfsHash: 'abcd'};
-    var mockManifest = {payloadFilePath: '/path/to/file'};
+    var mockManifest = {FileName: 'filename'};
     var mockPayload = 'this is the payload';
     var mockMetadata = {filename: 'abcd', importantTag: 'efg'};
 
@@ -30,18 +29,18 @@ describe('Indexer', function() {
             getPayload: (ipfsHash, filename) => {return Promise.resolve('/path/to/payload');}
         };
         metadataGatherer = {
-            gatherFor: (manifest, payload) => {return Promise.resolve(mockMetadata);}
+            aggregate: (deposition, manifest, payload) => {return Promise.resolve(mockMetadata);}
         };
         repository = {
             store: (metadata) => {}
         };
-        indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository);
+        indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, {log: () => {}});
     });
 
     it('hooks the onDepositionPublished event on the contract', function(done) {
-        sinon.spy(proven, 'onDepositionPublished');
+        chai.spy.on(proven, 'onDepositionPublished');
         indexer.runOnce().then(function() {
-            expect(proven.onDepositionPublished).to.have.been.called;
+            expect(proven.onDepositionPublished).to.have.been.called();
             done();
         }).catch(function(error) {
             done(error);
@@ -49,9 +48,9 @@ describe('Indexer', function() {
     });
 
     it('pins the enclosure', function(done) {
-        sinon.spy(ipfsLink, 'pinEnclosure');
+        chai.spy.on(ipfsLink, 'pinEnclosure');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.pinEnclosure).to.have.been.calledWith(mockDeposition.ipfsHash);
+            expect(ipfsLink.pinEnclosure).to.have.been.called.with(mockDeposition.ipfsHash);
             done();
         }).catch(function(error) {
             done(error);
@@ -59,9 +58,9 @@ describe('Indexer', function() {
     });
 
     it('loads the manifest', function(done) {
-        sinon.spy(ipfsLink, 'readManifest');
+        chai.spy.on(ipfsLink, 'readManifest');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.readManifest).to.have.been.calledWith(mockDeposition.ipfsHash);
+            expect(ipfsLink.readManifest).to.have.been.called.with(mockDeposition.ipfsHash);
             done();
         }).catch(function(error) {
             done(error);
@@ -69,9 +68,9 @@ describe('Indexer', function() {
     });
 
     it('loads the payload', function(done) {
-        sinon.spy(ipfsLink, 'getPayload');
+        chai.spy.on(ipfsLink, 'getPayload');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.getPayload).to.have.been.calledWith(mockDeposition.ipfsHash, mockManifest.payloadFilePath);
+            expect(ipfsLink.getPayload).to.have.been.called.with(mockDeposition.ipfsHash, 'content/' + mockManifest.FileName);
             done();
         }).catch(function(error) {
             done(error);
@@ -79,9 +78,9 @@ describe('Indexer', function() {
     });
 
     it('gathers metadata', function(done) {
-        sinon.spy(metadataGatherer, 'gatherFor');
+        chai.spy.on(metadataGatherer, 'aggregate');
         indexer.runOnce().then(function() {
-            expect(metadataGatherer.gatherFor).to.have.been.calledWith(mockManifest, '/path/to/payload');
+            expect(metadataGatherer.aggregate).to.have.been.called.with(mockDeposition, mockManifest, '/path/to/payload');
             done();
         }).catch(function(error) {
             done(error);
@@ -89,9 +88,9 @@ describe('Indexer', function() {
     });
 
     it('stores the metadata into the repository', function(done) {
-        sinon.spy(repository, 'store');
+        chai.spy.on(repository, 'store');
         indexer.runOnce().then(function() {
-            expect(repository.store).to.have.been.calledWith(mockMetadata);
+            expect(repository.store).to.have.been.called.with(mockMetadata);
             done();
         }).catch(function(error) {
             done(error);
@@ -116,7 +115,7 @@ describe('Indexer', function() {
         });
 
         it('rejects if there was an error gathering metadata', function() {
-            metadataGatherer.gatherFor = () => {return Promise.reject('Error gathering metadata');}
+            metadataGatherer.aggregate = () => {return Promise.reject('Error gathering metadata');}
             expect(indexer.runOnce()).to.be.rejectedWith('Error gathering metadata');
         });
 

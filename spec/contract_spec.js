@@ -1,47 +1,41 @@
 var chai = require('chai');
+var spies = require('chai-spies');
+chai.use(spies);
 var expect = chai.expect;
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
-chai.use(sinonChai);
 
 var Contract = require('../src/contract');
-var contract;
-var web3Contract;
-var sandbox;
 
 describe('Contract', function() {
     describe('watchEvent', function() {
+
+        var eventObject;
+        var web3Contract;
+        var contract;
+
         beforeEach(function() {
-            sandbox = sinon.sandbox.create();
+            callbackArgs = {args: 'abc'};
+            eventObject = {
+                watch: function(callback) {
+                    callback(null, callbackArgs);
+                }
+            };
             web3Contract = {
                 SomeEvent: function() {
-                    return {
-                        watch: function(callback) {
-                            callback(null, {args: 'abc'});
-                        }
-                    };
+                    return eventObject;
                 }
             };
             contract = new Contract(web3Contract);
         });
-        afterEach(function() {
-            sandbox.restore();
-        });
 
         it('defers to the event object', function() {
-            var watchSpy = sinon.spy();
-            web3Contract.SomeEvent = function() {
-                return {
-                    watch: watchSpy
-                };
-            };
+            chai.spy.on(eventObject, 'watch');
             contract.watchEvent('SomeEvent', () => {});
-            expect(watchSpy).to.have.been.called;
+            expect(eventObject.watch).to.have.been.called();
         });
 
         it('calls the callback when an event occurs', function() {
             contract.watchEvent('SomeEvent', function(error, args) {
-                expect(args).to.not.eql('undefined');
+                expect(args).to.eql(callbackArgs.args);
             });
         });
 
@@ -54,7 +48,7 @@ describe('Contract', function() {
                 };
             };
             contract.watchEvent('SomeEvent', function(error, args) {
-                expect(error).to.not.eql(null);
+                expect(error).to.eql('error');
             });
         });
     });

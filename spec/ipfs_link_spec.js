@@ -1,10 +1,9 @@
 var chai = require('chai');
-var expect = chai.expect;
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
-chai.use(sinonChai);
+var spies = require('chai-spies');
+chai.use(spies);
 var chaiJsonEqual = require('chai-json-equal');
 chai.use(chaiJsonEqual);
+var expect = chai.expect;
 
 var IpfsLink = require('../src/ipfs_link');
 
@@ -28,9 +27,9 @@ describe('IpfsLink', function() {
         });
 
         it('defers to the ipfs module', function(done) {
-            sinon.spy(mockIpfs.pin, 'add');
+            chai.spy.on(mockIpfs.pin, 'add');
             ipfsLink.pinEnclosure('abcd').then(function() {
-                expect(mockIpfs.pin.add).to.have.been.calledWith('abcd');
+                expect(mockIpfs.pin.add).to.have.been.called.with('abcd');
                 done();
             }).catch(function(error) {
                 done(error);
@@ -58,9 +57,9 @@ describe('IpfsLink', function() {
         });
 
         it('defers to the ipfs module', function(done) {
-            sinon.spy(mockIpfs, 'cat');
+            chai.spy.on(mockIpfs, 'cat');
             ipfsLink.readManifest('abcd').then(function(manifest) {
-                expect(mockIpfs.cat).to.have.been.calledWith('abcd/manifest.json');
+                expect(mockIpfs.cat).to.have.been.called.with('abcd/manifest.json');
                 done();
             }).catch(function(error) {
                 done(error);
@@ -97,9 +96,9 @@ describe('IpfsLink', function() {
         });
 
         it('defers to the ipfs module', function(done) {
-            sinon.spy(mockIpfs, 'cat');
+            chai.spy.on(mockIpfs, 'cat');
             ipfsLink.getPayload('abcd', 'filename').then(function(payloadPath) {
-                expect(mockIpfs.cat).to.have.been.calledWith('abcd/content/filename');
+                expect(mockIpfs.cat).to.have.been.called.with('abcd/content/filename');
                 done();
             }).catch(function(error) {
                 done(error);
