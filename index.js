@@ -34,7 +34,7 @@ process.argv.forEach(function(value) {
 });
 
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-var abi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'features/step_definitions/proven.abi'), 'utf8'));
+var abi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'res/proven.abi'), 'utf8'));
 var contractDefinition = web3.eth.contract(abi);
 var address = '0x3ff76874e26e00154c81854dab23d594e7fef480';
 var web3Contract = contractDefinition.at(address);

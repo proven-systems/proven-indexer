@@ -4,14 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const expect = require('chai').expect;
 const multihash = require('multi-hash');
-const Web3 = require('web3');
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-
-var provenAbi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'proven.abi'), 'utf8'));
-var provenAddress = '0x3ff76874e26e00154c81854dab23d594e7fef480';
-var Proven = web3.eth.contract(provenAbi);
-var proven = Proven.at(provenAddress);
-var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
 
 var devChainPath = path.resolve(__dirname, '../../dev_chain');
 
