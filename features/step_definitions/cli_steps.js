@@ -19,11 +19,13 @@ function sleep(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-module.exports = function() {
+var {defineSupportCode} = require('cucumber');
+
+defineSupportCode(function({Given, When, Then}) {
 
     var ipfsHash;
 
-    this.Given("an Ethereum blockchain in a known state", function(callback) {
+    Given("an Ethereum blockchain in a known state", function(callback) {
         exec(path.resolve(devChainPath, 'bin/reset_dev_chain'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
@@ -33,7 +35,7 @@ module.exports = function() {
         });
     });
 
-    this.Given("a running Ethereum client", {timeout: 10 * 1000}, function(callback) {
+    Given("a running Ethereum client", {timeout: 10 * 1000}, function(callback) {
         exec(path.resolve(devChainPath, 'bin/start_dev_chain --daemon --geth'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
@@ -45,7 +47,7 @@ module.exports = function() {
         });
     });
 
-    this.Given('a running miner', function(callback) {
+    Given('a running miner', function(callback) {
         const child = spawn(path.resolve(devChainPath, 'bin/start_ethminer'), [], {
             detached: true,
             stdio: 'ignore'
@@ -56,7 +58,7 @@ module.exports = function() {
         });
     });
 
-    this.Given('an initialized IPFS client', function(callback) {
+    Given('an initialized IPFS client', function(callback) {
         exec('ipfs init', function(error, stdout, stderr) {
             if (error) {
                 if (error.toString().search(/ipfs configuration file already exists/) != -1) {
@@ -70,7 +72,7 @@ module.exports = function() {
         });
     });
 
-    this.Given('a running IPFS daemon', function(callback) {
+    Given('a running IPFS daemon', function(callback) {
         const child = spawn(path.resolve(devChainPath, 'bin/start_ipfs'), [], {
             detached: true,
             stdio: 'ignore'
@@ -81,7 +83,7 @@ module.exports = function() {
         });
     });
 
-    this.Given('a published Proven enclosure', function(callback) {
+    Given('a published Proven enclosure', function(callback) {
         exec(path.resolve(devChainPath, 'bin/add_sample_enclosure'), function(error, stdout, stderr) {
             if (error) {
                 callback(error);
@@ -92,7 +94,7 @@ module.exports = function() {
         });
     });
 
-    this.When('I run the indexer', function(callback) {
+    When('I run the indexer', function(callback) {
         const child = spawn('node', ['index.js', '--once'], {
             stdio: 'ignore'
         });
@@ -100,7 +102,7 @@ module.exports = function() {
         callback();
     });
 
-    this.When('a deposition is published', {timeout: 20*1000}, function(callback) {
+    When('a deposition is published', {timeout: 20*1000}, function(callback) {
         const child = spawn('node', [path.resolve(devChainPath, 'bin/add_deposition.js'), ipfsHash], {
             stdio: 'ignore'
         });
@@ -110,7 +112,7 @@ module.exports = function() {
         });
     });
 
-    this.Then('the deposition metadata should be in the database', {timeout: 30*1000}, function(callback) {
+    Then('the deposition metadata should be in the database', {timeout: 30*1000}, function(callback) {
         sleep(20000).then(function() {
             var MongoClient = require('mongodb').MongoClient;
             MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
@@ -134,4 +136,4 @@ module.exports = function() {
             });
         });
     });
-}
+});
