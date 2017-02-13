@@ -34,7 +34,7 @@ describe('Indexer', function() {
         repository = {
             store: (metadata) => {}
         };
-        indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, {log: () => {}});
+        indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, {info: () => {}});
     });
 
     it('hooks the onDepositionPublished event on the contract', function(done) {

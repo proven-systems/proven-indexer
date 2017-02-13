@@ -19,29 +19,29 @@ Indexer.prototype.runOnce = function() {
             if (error) {
                 reject(error);
             } else {
-                logger.log('Deposition published (' + deposition.ipfsHash + ')');
+                logger.info('Deposition published (' + deposition.ipfsHash + ')');
                 ipfsLink.pinEnclosure(deposition.ipfsHash).then(function() {
-                    logger.log('- Enclosure pinned');
+                    logger.info('- Enclosure pinned');
                     return ipfsLink.readManifest(deposition.ipfsHash);
                 }).then(function(_manifest) {
-                    logger.log('- Manifest read');
+                    logger.info('- Manifest read');
                     manifest = _manifest;
                     return ipfsLink.getPayload(deposition.ipfsHash, 'content/' + manifest.FileName);
                 }).then(function(payloadPath) {
-                    logger.log('- Payload read (' + payloadPath + ')');
+                    logger.info('- Payload read (' + payloadPath + ')');
                     return metadataGatherer.aggregate(deposition, manifest, payloadPath);
                 }).then(function(metadata) {
-                    logger.log('- Metadata read');
+                    logger.info('- Metadata read');
                     return repository.store(metadata);
                 }).then(function() {
-                    logger.log('- Document stored to repository');
+                    logger.info('- Document stored to repository');
                     resolve();
                 }).catch(function(error) {
                     reject(error);
                 });
             }
         });
-        logger.log('Waiting for published deposition...');
+        logger.info('Waiting for published deposition...');
     });
 };
 

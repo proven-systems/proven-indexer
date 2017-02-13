@@ -3,6 +3,17 @@
 const fs = require('fs');
 var path = require('path');
 
+const winston = require('winston');
+var logger = new winston.Logger({
+    transports: [
+        new winston.transports.Console({json: false, timestamp: true}),
+        new winston.transports.File({filename: path.resolve(__dirname, 'indexer.log'), json: false})
+    ],
+    exitOnError: false
+});
+
+logger.info('Initializing...');
+
 var Web3 = require('web3');
 var MongoClient = require('mongodb').MongoClient;
 
@@ -35,26 +46,26 @@ metadataGatherer = new MetadataGatherer();
 
 MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
     if (error) {
-        console.log(error);
+        logger.error(error);
         process.exit(1);
     }
 
     repository = new Repository(db);
 
-    indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, console);
+    indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, logger);
 
     if (runOnce) {
         indexer.runOnce().then(function() {
             process.exit();
         }).catch(function(error) {
-            console.log(error);
+            logger.error(error);
             process.exit(1);
         });
     } else {
         indexer.run().then(function() {
             process.exit();
         }).catch(function(error) {
-            console.log(error);
+            logger.error(error);
             process.exit(1);
         });
     }
