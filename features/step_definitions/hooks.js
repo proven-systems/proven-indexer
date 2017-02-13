@@ -1,11 +1,8 @@
+var {defineSupportCode} = require('cucumber');
 const exec = require('child_process').exec;
 
-module.exports = function() {
-    this.Before(function() {
-        return true;
-    });
-
-    this.After(function() {
+defineSupportCode(function({After}) {
+    After(function() {
         exec("kill `ps -ef | grep parity | awk '{print $2}'`", function(error, stdout, stderr) {
         });
         exec("kill `ps -ef | grep ethminer | awk '{print $2}'`", function(error, stdout, stderr) {
@@ -14,4 +11,4 @@ module.exports = function() {
         });
         return true;
     });
-}
+});
