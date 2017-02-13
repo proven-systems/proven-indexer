@@ -2,3 +2,7 @@
 
 # proven-indexer
 
+## Development
+
+    $> export DEV_CHAIN_ROOT=`pwd`/dev_chain
+    $> chmod 400 dev_chain/etc/coinbase_password
