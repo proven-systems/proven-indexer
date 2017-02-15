@@ -16,7 +16,11 @@ var initializeMetadataFromDeposition = function(deposition) {
         ipfsHash: deposition.ipfsHash,
         depositions: [{
             id: deposition.deposition,
-            deponent: deposition.deponent
+            deponent: deposition.deponent,
+            //publishedAt: Date.now().toString(),
+            blockHash: deposition.blockHash,
+            blockNumber: deposition.blockNumber,
+            transactionHash: deposition.transactionHash
         }]
     };
 };

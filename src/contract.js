@@ -8,7 +8,7 @@ Contract.prototype.watchEvent = function(name, callback) {
         if (error) {
             callback(error);
         } else {
-            callback(null, result.args);
+            callback(null, result.args, result);
         }
     });
 };
