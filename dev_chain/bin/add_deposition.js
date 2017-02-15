@@ -9,10 +9,12 @@ var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 var provenAbi = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../res/proven.abi'), 'utf8'));
-var provenAddress = '0x3ff76874e26e00154c81854dab23d594e7fef480';
+//var provenAddress = '0x3ff76874e26e00154c81854dab23d594e7fef480';
+var provenAddress = '0xc34bf56a27ceab53e795eba55b9f1503eea6a771';
 var Proven = web3.eth.contract(provenAbi);
 var proven = Proven.at(provenAddress);
-var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
+//var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
+var fromAddress = '0x00F28F9B9692E00feAB5A53469FC3e2972574619';
 
 function ipfsHashStringToHexString(ipfsHash) {
     let rawIpfsHash = bs58.decode(ipfsHash);

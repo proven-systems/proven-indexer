@@ -4,4 +4,5 @@ npm-debug.log
 coverage
 dev_chain/parity.pid
 dev_chain/db
+dev_chain/etc/ropsten_coinbase_password
 indexer.log
