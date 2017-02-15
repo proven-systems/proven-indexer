@@ -114,7 +114,11 @@ describe('MetadataGatherer', function() {
 
         it('stores the results of exiftool into the metadata', function(done) {
             metadataGatherer.aggregate(deposition, mockEnclosurePath).then(function(metadata) {
-                expect(metadata).to.have.property('exiftool');
+                expect(metadata.extracts.length).to.eql(1);
+                expect(metadata.extracts[0].source).to.eql('exiftool');
+                expect(metadata.extracts[0]).to.have.property('sourceVersion');
+                expect(metadata.extracts[0]).to.have.property('extractedAt');
+                expect(metadata.extracts[0]).to.have.property('data');
                 done();
             }).catch(function(error) {
                 done(error);

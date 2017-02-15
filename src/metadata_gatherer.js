@@ -14,8 +14,10 @@ const depositionFieldMap = {
 var initializeMetadataFromDeposition = function(deposition) {
     return {
         ipfsHash: deposition.ipfsHash,
-        depositionId: deposition.deposition,
-        deponent: deposition.deponent
+        depositions: [{
+            id: deposition.deposition,
+            deponent: deposition.deponent
+        }]
     };
 };
 
@@ -48,11 +50,16 @@ var addMetadataFromManifest = function(metadata, enclosurePath, callback) {
 };
 
 var addMetadataFromExifTags = function(metadata, exifTags) {
-    metadata.exiftool = exifTags;
     metadata.createdAt = exifTags.DateTimeOriginal;
     metadata.cameraModel = exifTags.Model;
     metadata.imageWidth = exifTags.ImageWidth;
     metadata.imageHeight = exifTags.ImageHeight;
+    metadata.extracts = [{
+        source: 'exiftool',
+        sourceVersion: exifTags.ExifToolVersion,
+        extractedAt: Date.now().toString(),
+        data: exifTags
+    }];
 };
 
 MetadataGatherer.prototype.aggregate = function(deposition, enclosurePath) {
