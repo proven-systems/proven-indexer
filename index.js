@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 var path = require('path');
+const mkdirp = require('mkdirp');
 
 const winston = require('winston');
 var logger = new winston.Logger({
@@ -41,7 +42,7 @@ var web3Contract = contractDefinition.at(address);
 
 proven = new Proven(new Contract(web3Contract));
 
-ipfsLink = new IpfsLink(ipfs);
+ipfsLink = new IpfsLink(ipfs, fs, { mkdirp: mkdirp }, logger);
 metadataGatherer = new MetadataGatherer();
 
 MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {

@@ -1,3 +1,6 @@
+const path = require('path');
+const ipfs_hash_path = require('./ipfs_hash_path');
+
 var proven;
 var ipfsLink;
 var metadataGatherer;
@@ -14,7 +17,7 @@ function Indexer(_proven, _ipfsLink, _metadataGatherer, _repository, _logger) {
 
 Indexer.prototype.runOnce = function() {
     return new Promise(function(resolve, reject) {
-        var manifest;
+        var enclosurePath;
         proven.onDepositionPublished(function(error, deposition) {
             if (error) {
                 reject(error);
@@ -22,10 +25,11 @@ Indexer.prototype.runOnce = function() {
                 logger.info('Deposition published (' + deposition.ipfsHash + ')');
                 ipfsLink.pinEnclosure(deposition.ipfsHash).then(function() {
                     logger.info('- Enclosure pinned');
-                    return ipfsLink.getR(deposition.ipfsHash, '/tmp');
+                    enclosurePath = path.resolve('/tmp/ipfs-cache/ipfs', ipfs_hash_path.split(deposition.ipfsHash, 3).join('/'));
+                    return ipfsLink.getR(deposition.ipfsHash, enclosurePath);
                 }).then(function() {
                     logger.info('- Enclosure cached locally');
-                    return metadataGatherer.aggregate(deposition, '/tmp');
+                    return metadataGatherer.aggregate(deposition, enclosurePath);
                 }).then(function(metadata) {
                     logger.info('- Metadata read');
                     return repository.store(metadata);

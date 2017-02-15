@@ -3,11 +3,13 @@ const path = require('path');
 var ipfs;
 var fs;
 var mkdirp;
+var logger;
 
-function IpfsLink(_ipfs, _fs, _mkdirp) {
+function IpfsLink(_ipfs, _fs, _mkdirp, _logger) {
     ipfs = _ipfs;
     fs = _fs;
     mkdirp = _mkdirp;
+    logger = _logger;
 }
 
 IpfsLink.prototype.pinEnclosure = function(ipfsHash) {
@@ -25,6 +27,7 @@ IpfsLink.prototype.pinEnclosure = function(ipfsHash) {
 IpfsLink.prototype.get = function(hash, filePath) {
     return new Promise(function(resolve, reject) {
         ipfs.cat(hash).then(function(ipfsStream) {
+            logger.info(`[ipfs cat ${hash} => ${filePath}]`);
             const fileStream = fs.createWriteStream(filePath);
             ipfsStream.pipe(fileStream);
             ipfsStream.on('end', function() {

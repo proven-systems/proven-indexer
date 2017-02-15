@@ -58,7 +58,7 @@ describe('IpfsLink', function() {
                 createWriteStream: (filename) => { return fs.createWriteStream('/tmp/ipfs_link_get'); }
             };
 
-            ipfsLink = new IpfsLink(mockIpfs, mockFs);
+            ipfsLink = new IpfsLink(mockIpfs, mockFs, null, { info: () => {} });
         });
 
         it('defers to ipfs.cat', function(done) {
@@ -145,7 +145,7 @@ describe('IpfsLink', function() {
             mkdirpContainer = {
                 mkdirp: function(path, callback) { callback(); }
             };
-            ipfsLink = new IpfsLink(mockIpfs, fs, mkdirpContainer);
+            ipfsLink = new IpfsLink(mockIpfs, fs, mkdirpContainer, { info: () => {} });
         });
 
         it('mkdirps the output path', function(done) {
