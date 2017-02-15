@@ -37,12 +37,12 @@ IpfsLink.prototype.get = function(hash, filePath) {
 IpfsLink.prototype.getR = function(hash, folderPath) {
     let self = this;
     return new Promise(function(resolve, reject) {
-        let promises = new Array();
         mkdirp.mkdirp(folderPath, function(error) {
             if (error) {
                 reject(error);
             } else {
                 ipfs.ls(hash).then(function(result) {
+                    let promises = new Array();
                     if (!result.Objects || result.Objects.length != 1) {
                         reject(new Error(`No objects found in ${hash}`));
                     } else {
@@ -56,11 +56,11 @@ IpfsLink.prototype.getR = function(hash, folderPath) {
                             }
                         }
                     }
+                    Promise.all(promises).then(function() {
+                        resolve();
+                    });
                 });
             }
-        });
-        Promise.all(promises).then(function() {
-            resolve();
         });
     });
 };
