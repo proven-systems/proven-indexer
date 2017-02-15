@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const multihash = require('multi-hash');
+const multihash = require('multihashes');
+const bs58 = require('bs58');
 
 var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
@@ -13,17 +14,12 @@ var Proven = web3.eth.contract(provenAbi);
 var proven = Proven.at(provenAddress);
 var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
 
-function bytesToString(bytes) {
-    var result = "";
-    bytes.forEach(function(b) {
-        result += ('0' + b.toString(16)).slice(-2);
-    });
-    return result;
+function ipfsHashStringToHexString(ipfsHash) {
+    let rawIpfsHash = bs58.decode(ipfsHash);
+    return new Buffer(rawIpfsHash).toString('hex');
 }
 
-var ipfsHash = process.argv[2];
-var ipfsHashAsBytes = multihash.decode(ipfsHash);
-var ipfsHashAsHexString = '0x' + bytesToString(ipfsHashAsBytes);
+var ipfsHashAsHexString = '0x' + ipfsHashStringToHexString(process.argv[2]);
 console.log(ipfsHashAsHexString);
 
 proven.publishDeposition.sendTransaction(ipfsHashAsHexString, {from: fromAddress}, function(error, txHash) {

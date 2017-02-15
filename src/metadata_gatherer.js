@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const exec = require('child_process').exec;
+const multihash = require('multihashes');
+const bs58 = require('bs58');
 
 var MetadataGatherer = function() {
 };
@@ -25,6 +27,23 @@ var initializeMetadataFromDeposition = function(deposition) {
     };
 };
 
+function bytesToString(bytes) {
+    var result = "";
+    bytes.forEach(function(b) {
+        result += ('0' + b.toString(16)).slice(-2);
+    });
+    return result;
+}
+
+var extractFileHashes = function(fileHashes) {
+    let results = {};
+    fileHashes.forEach(function(hash) {
+        let decoded = multihash.decode(new Buffer(bs58.decode(hash)));
+        results[decoded.name] = decoded.digest.toString('hex');
+    });
+    return results;
+}
+
 var addMetadataFromManifest = function(metadata, enclosurePath, callback) {
     fs.readFile(path.resolve(enclosurePath, 'manifest.json'), 'utf8', function(error, data) {
         if (error) {
@@ -43,9 +62,7 @@ var addMetadataFromManifest = function(metadata, enclosurePath, callback) {
                     "blockNumber": manifest.BitcoinBlockNumber
                 }
             };
-            metadata.fileHashes = {
-                sha1: manifest.FileHashes
-            };
+            metadata.fileHashes = extractFileHashes(manifest.FileHashes.split(' '));
             metadata.previousFileHashes = manifest.PreviousFileHashes;
             metadata.previousIpfsHash = manifest.PreviousIPFSHash;
             callback();

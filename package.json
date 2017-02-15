@@ -33,7 +33,7 @@
     "ipfs-api": "^12.1.4",
     "mkdirp": "^0.5.1",
     "mongodb": "^2.2.20",
-    "multi-hash": "^0.1.1",
+    "multihashes": "^0.3.3",
     "web3": "^0.17.0-beta",
     "winston": "^2.3.1"
   }
