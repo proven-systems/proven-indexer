@@ -16,6 +16,10 @@ function Indexer(_proven, _ipfsLink, _metadataGatherer, _repository, _logger) {
 }
 
 Indexer.prototype.runOnce = function() {
+    return this.run({ once: true });
+};
+
+Indexer.prototype.run = function(options = {}) {
     return new Promise(function(resolve, reject) {
         var enclosurePath;
         proven.onDepositionPublished(function(error, deposition) {
@@ -35,7 +39,9 @@ Indexer.prototype.runOnce = function() {
                     return repository.store(metadata);
                 }).then(function() {
                     logger.info('- Document stored to repository');
-                    resolve();
+                    if (options.once) {
+                        resolve();
+                    }
                 }).catch(function(error) {
                     reject(error);
                 });
