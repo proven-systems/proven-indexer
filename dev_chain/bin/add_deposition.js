@@ -16,7 +16,7 @@ var fromAddress = '0x0061b257BC2985c93868416f6543f76359AC1072';
 function bytesToString(bytes) {
     var result = "";
     bytes.forEach(function(b) {
-        result += b.toString(16);
+        result += ('0' + b.toString(16)).slice(-2);
     });
     return result;
 }
