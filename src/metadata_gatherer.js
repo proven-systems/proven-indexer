@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const exec = require('child_process').exec;
 
 var MetadataGatherer = function() {
@@ -17,24 +19,32 @@ var initializeMetadataFromDeposition = function(deposition) {
     };
 };
 
-var addMetadataFromManifest = function(metadata, manifest) {
-    metadata.filename = manifest.FileName;
-    metadata.guid = manifest.GUID;
-    metadata.blockchains = {
-        ethereum: {
-            "blockHash": manifest.EthereumBlockHash,
-            "blockNumber": manifest.EthereumBlockNumber
-        },
-        bitcoin: {
-            "blockHash": manifest.BitcoinBlockHash,
-            "blockNumber": manifest.BitcoinBlockNumber
+var addMetadataFromManifest = function(metadata, enclosurePath, callback) {
+    fs.readFile(path.resolve(enclosurePath, 'manifest.json'), 'utf8', function(error, data) {
+        if (error) {
+            callback(new Error(error));
+        } else {
+            manifest = JSON.parse(data);
+            metadata.filename = manifest.FileName;
+            metadata.guid = manifest.GUID;
+            metadata.blockchains = {
+                ethereum: {
+                    "blockHash": manifest.EthereumBlockHash,
+                    "blockNumber": manifest.EthereumBlockNumber
+                },
+                bitcoin: {
+                    "blockHash": manifest.BitcoinBlockHash,
+                    "blockNumber": manifest.BitcoinBlockNumber
+                }
+            };
+            metadata.fileHashes = {
+                sha1: manifest.FileHashes
+            };
+            metadata.previousFileHashes = manifest.PreviousFileHashes;
+            metadata.previousIpfsHash = manifest.PreviousIPFSHash;
+            callback();
         }
-    };
-    metadata.fileHashes = {
-        sha1: manifest.FileHashes
-    };
-    metadata.previousFileHashes = manifest.PreviousFileHashes;
-    metadata.previousIpfsHash = manifest.PreviousIPFSHash;
+    });
 };
 
 var addMetadataFromExifTags = function(metadata, exifTags) {
@@ -45,18 +55,22 @@ var addMetadataFromExifTags = function(metadata, exifTags) {
     metadata.imageHeight = exifTags.ImageHeight;
 };
 
-MetadataGatherer.prototype.aggregate = function(deposition, manifest, payloadPath) {
+MetadataGatherer.prototype.aggregate = function(deposition, enclosurePath) {
     return new Promise(function(resolve, reject) {
         var metadata = initializeMetadataFromDeposition(deposition);
-        addMetadataFromManifest(metadata, manifest);
-
-        exec('exiftool -json ' + payloadPath, function(error, stdout, stderr) {
+        addMetadataFromManifest(metadata, enclosurePath, function(error) {
             if (error) {
                 reject(error);
             } else {
-                var json = JSON.parse(stdout)[0];
-                addMetadataFromExifTags(metadata, json);
-                resolve(metadata);
+                exec('exiftool -json ' + path.resolve(enclosurePath, 'content', metadata.filename), function(error, stdout, stderr) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        var json = JSON.parse(stdout)[0];
+                        addMetadataFromExifTags(metadata, json);
+                        resolve(metadata);
+                    }
+                });
             }
         });
     });

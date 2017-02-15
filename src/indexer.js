@@ -22,14 +22,10 @@ Indexer.prototype.runOnce = function() {
                 logger.info('Deposition published (' + deposition.ipfsHash + ')');
                 ipfsLink.pinEnclosure(deposition.ipfsHash).then(function() {
                     logger.info('- Enclosure pinned');
-                    return ipfsLink.readManifest(deposition.ipfsHash);
-                }).then(function(_manifest) {
-                    logger.info('- Manifest read');
-                    manifest = _manifest;
-                    return ipfsLink.getPayload(deposition.ipfsHash, 'content/' + manifest.FileName);
-                }).then(function(payloadPath) {
-                    logger.info('- Payload read (' + payloadPath + ')');
-                    return metadataGatherer.aggregate(deposition, manifest, payloadPath);
+                    return ipfsLink.getR(deposition.ipfsHash, '/tmp');
+                }).then(function() {
+                    logger.info('- Enclosure cached locally');
+                    return metadataGatherer.aggregate(deposition, '/tmp');
                 }).then(function(metadata) {
                     logger.info('- Metadata read');
                     return repository.store(metadata);

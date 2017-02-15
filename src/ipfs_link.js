@@ -1,9 +1,13 @@
-const fs = require('fs');
+const path = require('path');
 
 var ipfs;
+var fs;
+var mkdirp;
 
-function IpfsLink(_ipfs) {
+function IpfsLink(_ipfs, _fs, _mkdirp) {
     ipfs = _ipfs;
+    fs = _fs;
+    mkdirp = _mkdirp;
 }
 
 IpfsLink.prototype.pinEnclosure = function(ipfsHash) {
@@ -14,6 +18,49 @@ IpfsLink.prototype.pinEnclosure = function(ipfsHash) {
             } else {
                 resolve(pins);
             }
+        });
+    });
+};
+
+IpfsLink.prototype.get = function(hash, filePath) {
+    return new Promise(function(resolve, reject) {
+        ipfs.cat(hash).then(function(ipfsStream) {
+            const fileStream = fs.createWriteStream(filePath);
+            ipfsStream.pipe(fileStream);
+            ipfsStream.on('end', function() {
+                resolve();
+            });
+        });
+    });
+};
+
+IpfsLink.prototype.getR = function(hash, folderPath) {
+    let self = this;
+    return new Promise(function(resolve, reject) {
+        let promises = new Array();
+        mkdirp.mkdirp(folderPath, function(error) {
+            if (error) {
+                reject(error);
+            } else {
+                ipfs.ls(hash).then(function(result) {
+                    if (!result.Objects || result.Objects.length != 1) {
+                        reject(new Error(`No objects found in ${hash}`));
+                    } else {
+                        let links = result.Objects[0].Links;
+                        for (let i = 0; i < links.length; i++) {
+                            let link = links[i];
+                            if (link.Type === 1) {
+                                promises.push(self.getR(link.Hash, path.resolve(folderPath, link.Name)));
+                            } else {
+                                promises.push(self.get(link.Hash, path.resolve(folderPath, link.Name)));
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        Promise.all(promises).then(function() {
+            resolve();
         });
     });
 };

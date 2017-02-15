@@ -14,9 +14,7 @@ describe('Indexer', function() {
     var metadataGatherer;
     var repository;
     var indexer;
-    var mockDeposition = {ipfsHash: 'abcd'};
-    var mockManifest = {FileName: 'filename'};
-    var mockPayload = 'this is the payload';
+    var mockDeposition = {ipfsHash: 'abcdefghijkl'};
     var mockMetadata = {filename: 'abcd', importantTag: 'efg'};
 
     beforeEach(function() {
@@ -25,11 +23,10 @@ describe('Indexer', function() {
         };
         ipfsLink = {
             pinEnclosure: (ipfsHash) => {return Promise.resolve();},
-            readManifest: (ipfsHash) => {return Promise.resolve(mockManifest);},
-            getPayload: (ipfsHash, filename) => {return Promise.resolve('/path/to/payload');}
+            getR: (ipfsHash, path) => {return Promise.resolve();},
         };
         metadataGatherer = {
-            aggregate: (deposition, manifest, payload) => {return Promise.resolve(mockMetadata);}
+            aggregate: (deposition, enclosurePath) => {return Promise.resolve(mockMetadata);}
         };
         repository = {
             store: (metadata) => {}
@@ -57,20 +54,10 @@ describe('Indexer', function() {
         });
     });
 
-    it('loads the manifest', function(done) {
-        chai.spy.on(ipfsLink, 'readManifest');
+    it('caches the enclosure', function(done) {
+        chai.spy.on(ipfsLink, 'getR');
         indexer.runOnce().then(function() {
-            expect(ipfsLink.readManifest).to.have.been.called.with(mockDeposition.ipfsHash);
-            done();
-        }).catch(function(error) {
-            done(error);
-        });
-    });
-
-    it('loads the payload', function(done) {
-        chai.spy.on(ipfsLink, 'getPayload');
-        indexer.runOnce().then(function() {
-            expect(ipfsLink.getPayload).to.have.been.called.with(mockDeposition.ipfsHash, 'content/' + mockManifest.FileName);
+            expect(ipfsLink.getR).to.have.been.called.with(mockDeposition.ipfsHash, '/tmp/ipfs-cache/ipfs/ab/cd/ef/ghijkl');
             done();
         }).catch(function(error) {
             done(error);
@@ -80,7 +67,7 @@ describe('Indexer', function() {
     it('gathers metadata', function(done) {
         chai.spy.on(metadataGatherer, 'aggregate');
         indexer.runOnce().then(function() {
-            expect(metadataGatherer.aggregate).to.have.been.called.with(mockDeposition, mockManifest, '/path/to/payload');
+            expect(metadataGatherer.aggregate).to.have.been.called.with(mockDeposition, '/tmp/ipfs-cache/ipfs/ab/cd/ef/ghijkl');
             done();
         }).catch(function(error) {
             done(error);
@@ -104,14 +91,9 @@ describe('Indexer', function() {
             expect(indexer.runOnce()).to.be.rejectedWith('Error pinning enclosure');
         });
 
-        it('rejects if there was an error loading the manifest', function() {
-            ipfsLink.readManifest = () => {return Promise.reject('Error reading manifest');}
-            expect(indexer.runOnce()).to.be.rejectedWith('Error reading manifest');
-        });
-
-        it('rejects if there was an error loading the payload', function() {
-            ipfsLink.getPayload = () => {return Promise.reject('Error determining payload path');}
-            expect(indexer.runOnce()).to.be.rejectedWith('Error determining payload path');
+        it('rejects if there was an error caching the enclosure', function() {
+            ipfsLink.getR = () => {return Promise.reject('Error in getR');}
+            expect(indexer.runOnce()).to.be.rejectedWith('Error in getR');
         });
 
         it('rejects if there was an error gathering metadata', function() {
