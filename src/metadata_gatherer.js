@@ -23,7 +23,8 @@ var initializeMetadataFromDeposition = function(deposition) {
             blockHash: deposition.blockHash,
             blockNumber: deposition.blockNumber,
             transactionHash: deposition.transactionHash
-        }]
+        }],
+        indexedAt: Date().toString()
     };
 };
 
@@ -78,7 +79,7 @@ var addMetadataFromExifTags = function(metadata, exifTags) {
     metadata.extracts = [{
         source: 'exiftool',
         sourceVersion: exifTags.ExifToolVersion,
-        extractedAt: Date.now().toString(),
+        extractedAt: Date().toString(),
         data: exifTags
     }];
 };
