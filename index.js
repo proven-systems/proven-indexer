@@ -44,7 +44,7 @@ var web3Contract = contractDefinition.at(configuration.proven.address);
 proven = new Proven(new Contract(web3Contract));
 
 ipfsLink = new IpfsLink(ipfs, fs, { mkdirp: mkdirp }, logger);
-metadataGatherer = new MetadataGatherer();
+metadataGatherer = new MetadataGatherer(configuration);
 
 MongoClient.connect(configuration.db.endpoint, function(error, db) {
     if (error) {
