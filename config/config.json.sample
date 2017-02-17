@@ -1,0 +1,30 @@
+{
+    "development": {
+        "ethereum": {
+            "endpoint": "http://localhost:8545"
+        },
+        "proven": {
+            "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"
+        },
+        "db": {
+            "endpoint": "mongodb://localhost:27017/proven"
+        },
+        "logger": {
+            "timestamps": true
+        }
+    },
+    "production": {
+        "ethereum": {
+            "endpoint": "http://localhost:8545"
+        },
+        "proven": {
+            "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"
+        },
+        "db": {
+            "endpoint": "mongodb://localhost:27017/proven"
+        },
+        "logger": {
+            "timestamps": false
+        }
+    }
+}

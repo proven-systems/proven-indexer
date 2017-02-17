@@ -2,13 +2,15 @@
 
 const fs = require('fs');
 var path = require('path');
+
+const configuration = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'config/config.json')))[process.env.NODE_ENV];
+
 const mkdirp = require('mkdirp');
 
 const winston = require('winston');
 var logger = new winston.Logger({
     transports: [
-        new winston.transports.Console({json: false, timestamp: true}),
-        new winston.transports.File({filename: path.resolve(__dirname, 'indexer.log'), json: false})
+        new winston.transports.Console({json: false, timestamp: configuration.logger.timestamps}),
     ],
     exitOnError: false
 });
@@ -34,19 +36,17 @@ process.argv.forEach(function(value) {
     }
 });
 
-var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+var web3 = new Web3(new Web3.providers.HttpProvider(configuration.ethereum.endpoint));
 var abi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'res/proven.abi'), 'utf8'));
 var contractDefinition = web3.eth.contract(abi);
-//var address = '0x3ff76874e26e00154c81854dab23d594e7fef480';
-var address = '0xc34bf56a27ceab53e795eba55b9f1503eea6a771';
-var web3Contract = contractDefinition.at(address);
+var web3Contract = contractDefinition.at(configuration.proven.address);
 
 proven = new Proven(new Contract(web3Contract));
 
 ipfsLink = new IpfsLink(ipfs, fs, { mkdirp: mkdirp }, logger);
 metadataGatherer = new MetadataGatherer();
 
-MongoClient.connect('mongodb://localhost:27017/proven', function(error, db) {
+MongoClient.connect(configuration.db.endpoint, function(error, db) {
     if (error) {
         logger.error(error);
         process.exit(1);
