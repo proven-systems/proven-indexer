@@ -3,6 +3,9 @@
         "ethereum": {
             "endpoint": "http://localhost:8545"
         },
+        "ipfs": {
+            "cache_path": "/tmp/ipfs-cache/ipfs"
+        },
         "proven": {
             "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"
         },
@@ -16,6 +19,9 @@
     "production": {
         "ethereum": {
             "endpoint": "http://localhost:8545"
+        },
+        "ipfs": {
+            "cache_path": "/tmp/ipfs-cache/ipfs"
         },
         "proven": {
             "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"

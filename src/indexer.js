@@ -1,13 +1,15 @@
 const path = require('path');
 const ipfs_hash_path = require('./ipfs_hash_path');
 
+var configuration;
 var proven;
 var ipfsLink;
 var metadataGatherer;
 var repository;
 var logger;
 
-function Indexer(_proven, _ipfsLink, _metadataGatherer, _repository, _logger) {
+function Indexer(_configuration, _proven, _ipfsLink, _metadataGatherer, _repository, _logger) {
+    configuration = _configuration;
     proven = _proven;
     ipfsLink = _ipfsLink;
     metadataGatherer = _metadataGatherer;
@@ -29,7 +31,7 @@ Indexer.prototype.run = function(options = {}) {
                 logger.info('Deposition published (' + deposition.ipfsHash + ')');
                 ipfsLink.pinEnclosure(deposition.ipfsHash).then(function() {
                     logger.info('- Enclosure pinned');
-                    enclosurePath = path.resolve('/tmp/ipfs-cache/ipfs', ipfs_hash_path.split(deposition.ipfsHash, 3).join('/'));
+                    enclosurePath = path.resolve(configuration.ipfs.cache_path, ipfs_hash_path.split(deposition.ipfsHash, 3).join('/'));
                     return ipfsLink.getR(deposition.ipfsHash, enclosurePath);
                 }).then(function() {
                     logger.info('- Enclosure cached locally');

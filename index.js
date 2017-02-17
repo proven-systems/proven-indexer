@@ -54,7 +54,7 @@ MongoClient.connect(configuration.db.endpoint, function(error, db) {
 
     repository = new Repository(db);
 
-    indexer = new Indexer(proven, ipfsLink, metadataGatherer, repository, logger);
+    indexer = new Indexer(configuration, proven, ipfsLink, metadataGatherer, repository, logger);
 
     if (runOnce) {
         indexer.runOnce().then(function() {
