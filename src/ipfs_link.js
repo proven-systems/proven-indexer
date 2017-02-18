@@ -14,7 +14,7 @@ function IpfsLink(_ipfs, _fs, _mkdirp, _logger) {
 
 IpfsLink.prototype.pinEnclosure = function(ipfsHash) {
     return new Promise(function(resolve, reject) {
-        ipfs.pin.add(ipfsHash, function(error, pins) {
+        ipfs.pin.add(ipfsHash, {timeout: 60000}, function(error, pins) {
             if (error) {
                 reject(error);
             } else {
