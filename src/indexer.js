@@ -45,7 +45,8 @@ Indexer.prototype.run = function(options = {}) {
                         resolve();
                     }
                 }).catch(function(error) {
-                    reject(error);
+                    logger.error(error);
+                    //reject(error);
                 });
             }
         });
