@@ -1,38 +1,45 @@
 const path = require('path');
 
 var configuration;
-var proven_relay;
+var provenRelay;
 var repository;
 var logger;
 
-function Relay(_configuration, _proven_relay, _repository, _logger) {
+function Relay(_configuration, _provenRelay, _repository, _logger) {
     configuration = _configuration;
-    proven_relay = _proven_relay;
+    provenRelay = _provenRelay;
     repository = _repository;
     logger = _logger;
 }
 
+function processLoggedDeposition(deposition) {
+    return new Promise((resolve, reject) => {
+        repository.storeLoggedDeposition(deposition).then(() => {
+            resolve();
+        }).catch((error) => {
+            logger.error(error);
+        });
+    });
+};
+
 Relay.prototype.run = function(options = {}) {
-    return new Promise(function(resolve, reject) {
-        proven_relay.onDepositionPublished(function(error, deposition) {
+    logger.info('Waiting for published deposition...');
+    return new Promise((resolve, reject) => {
+        provenRelay.onDepositionPublished((error, deposition) => {
             if (error) {
                 reject(error);
             } else {
                 logger.info('Deposition published (' + deposition.ipfsHash + ')');
-                repository.storeDeposition(deposition).then(function() {
+                processLoggedDeposition(deposition).then(() => {
                     logger.info('- Deposition record created');
-                    if (options.once) {
+                    if (options.runOnce) {
                         resolve();
                     }
-                }).catch(function(error) {
-                    logger.error(error);
-                    if (options.once) {
-                        reject(error);
-                    }
+                }).catch((error) => {
+                    reject(error);
                 });
             }
         });
-        logger.info('Waiting for published deposition...');
     });
 };
 

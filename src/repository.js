@@ -58,6 +58,21 @@ Repository.prototype.storeDeposition = function(deposition) {
     });
 };
 
+Repository.prototype.storeLoggedDeposition = function(deposition) {
+    return new Promise((resolve, reject) => {
+        var collection = db.collection('loggedDepositions');
+        collection.insertOne(deposition).then((result) => {
+            if (result.insertedCount != 1) {
+                reject(new Error('Unexpected insertedCount inserting relayed deposition'));
+            } else {
+                resolve(result.insertedId);
+            }
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+};
+
 Repository.prototype.fetchAllDepositions = function() {
     return new Promise((resolve, reject) => {
         const collection = db.collection('depositions');

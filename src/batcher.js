@@ -1,9 +1,5 @@
 const path = require('path');
 const ipfs_hash_path = require('./ipfs_hash_path');
-const Resolver = require('ipld-resolver');
-const resolver = new Resolver();
-const dagCBOR = require('ipld-dag-cbor');
-const multihashes = require('multihashes');
 
 var configuration;
 var repository;

@@ -72,6 +72,18 @@ function runBatcher(configuration, repository, ipfsLink, provenRelay, logger) {
     });
 }
 
+function runRelay(configuration, provenRelay, repository, logger) {
+    return new Promise((resolve, reject) => {
+        let relay = new Relay(configuration, provenRelay, repository, logger);
+        relay.run(options).then(() => {
+            logger.info('Relay shut down');
+            resolve();
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+}
+
 MongoClient.connect(configuration.db.endpoint, function(error, db) {
     if (error) {
         logger.error(error);
@@ -83,6 +95,9 @@ MongoClient.connect(configuration.db.endpoint, function(error, db) {
     let promises = [];
     if (options.batch) {
         promises.push(runBatcher(configuration, repository, ipfsLink, provenRelay, logger));
+    }
+    if (options.relay) {
+        promises.push(runRelay(configuration, provenRelay, repository, logger));
     }
 
     Promise.all(promises).then(() => {
@@ -96,13 +111,6 @@ MongoClient.connect(configuration.db.endpoint, function(error, db) {
 
 /*
     if (options.relay) {
-        let relay = new Relay(configuration, proven_relay, repository, logger);
-        relay.run(options).then(function() {
-            logger.info('Relay shut down');
-        }).catch(function(error) {
-            logger.error(error);
-            process.exit(1);
-        });
     }
     if (options.index) {
         let indexer = new Indexer(configuration, ipfsLink, metadataGatherer, repository, logger);
