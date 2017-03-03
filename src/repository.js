@@ -73,6 +73,19 @@ Repository.prototype.storeLoggedDeposition = function(deposition) {
     });
 };
 
+Repository.prototype.fetchAllLoggedDepositions = function() {
+    return new Promise((resolve, reject) => {
+        const collection = db.collection('loggedDepositions');
+        collection.find().toArray((error, docs) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(docs);
+            }
+        });
+    });
+};
+
 Repository.prototype.fetchAllDepositions = function() {
     return new Promise((resolve, reject) => {
         const collection = db.collection('depositions');
