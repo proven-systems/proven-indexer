@@ -1,4 +1,5 @@
 const path = require('path');
+const exec = require('child_process').exec;
 
 var ipfs;
 var fs;
@@ -95,6 +96,27 @@ IpfsLink.prototype.getPayload = function(ipfsHash, filename) {
             });
         }).catch(function(error) {
             reject(error);
+        });
+    });
+};
+
+IpfsLink.prototype.storeBatch = function(batch) {
+    /*
+    return new Promise((resolve, reject) => {
+        ipfs.dag.put(batch).then((ipfsHash) => {
+            resolve(ipfsHash);
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+    */
+    return new Promise((resolve, reject) => {
+        exec(`echo '${JSON.stringify(batch)}' | ipfs dag put`, function(error, stdout) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(stdout.toString().trim());
+            }
         });
     });
 };

@@ -9,11 +9,18 @@
         "proven": {
             "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"
         },
+        "proven_relay": {
+            "address": "0x006c1fd1eed9b0a03753f6ea791baa6921c0c7ab",
+            "max_block_count": 10
+        },
         "db": {
             "endpoint": "mongodb://localhost:27017/proven"
         },
         "logger": {
             "timestamps": true
+        },
+        "batcher": {
+            "interval": 5000
         }
     },
     "production": {
@@ -26,11 +33,18 @@
         "proven": {
             "address": "0x826a45b9e84c4e88ba7ccb0532e257f8c2b90a93"
         },
+        "proven_relay": {
+            "address": "0x006c1fd1eed9b0a03753f6ea791baa6921c0c7ab",
+            "max_block_count": 10
+        },
         "db": {
             "endpoint": "mongodb://localhost:27017/proven"
         },
         "logger": {
             "timestamps": false
+        },
+        "batcher": {
+            "interval": 5000
         }
     }
 }

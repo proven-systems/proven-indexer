@@ -1,0 +1,56 @@
+#! /usr/bin/env bash
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -g|--geth)
+            GETH="--geth"
+            shift
+            ;;
+        -t|--trace)
+            TRACE="-lrpc=trace"
+            shift
+            ;;
+        -d|--daemon)
+            DAEMON=1
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$DEV_CHAIN_ROOT" ]; then
+    echo "DEV_CHAIN_ROOT is unset"
+    exit 1
+fi
+
+KEYS_PATH="$DEV_CHAIN_ROOT"/keys
+
+if [ -z "$DAEMON" ]; then
+    DAEMON_OPTIONS=""
+else
+    DAEMON_OPTIONS="daemon $DEV_CHAIN_ROOT/parity.pid"
+fi
+
+if [ ! -f "$DEV_CHAIN_ROOT"/etc/ropsten_coinbase ]; then
+    echo "$DEV_CHAIN_ROOT/etc/ropsten_coinbase doesn't exist"
+    exit 1
+fi
+
+if [ ! -f "$DEV_CHAIN_ROOT"/etc/ropsten_coinbase_password ]; then
+    echo "$DEV_CHAIN_ROOT/etc/ropsten_coinbase_password doesn't exist"
+    exit 1
+fi
+
+if [ $(stat -c %a "$DEV_CHAIN_ROOT"/etc/ropsten_coinbase_password) != 400 ]; then
+    echo "Set permissions on $DEV_CHAIN_ROOT/etc/ropsten_coinbase_password to 400"
+    exit 1
+fi
+
+COINBASE=`cat "$DEV_CHAIN_ROOT"/etc/ropsten_coinbase`
+PASSWORD="$DEV_CHAIN_ROOT"/etc/ropsten_coinbase_password
+
+parity $DAEMON_OPTIONS --chain ropsten --author $COINBASE --jsonrpc-cors "*" --force-ui --unlock $COINBASE --password "$PASSWORD" $GETH $TRACE

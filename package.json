@@ -30,7 +30,8 @@
     "mocha": "^3.2.0"
   },
   "dependencies": {
-    "ipfs-api": "^12.1.4",
+    "ipfs-api": "^12.1.7",
+    "ipfs-api-with-timeouts": "^12.1.7",
     "mkdirp": "^0.5.1",
     "mongodb": "^2.2.20",
     "multihashes": "^0.3.3",
