@@ -1,7 +1,10 @@
-var db;
+const mongoose = require('mongoose');
+const DepositionRequest = mongoose.model('DepositionRequest');
 
-function Repository(_db) {
-    db = _db;
+let logger;
+
+function Repository(_logger) {
+    logger = _logger;
 }
 
 Repository.prototype.store = function(metadata) {
@@ -86,27 +89,22 @@ Repository.prototype.fetchAllLoggedDepositions = function() {
     });
 };
 
-Repository.prototype.fetchAllDepositions = function() {
+Repository.prototype.fetchAllDepositions = () => {
     return new Promise((resolve, reject) => {
-        const collection = db.collection('depositions');
-        collection.find().toArray((error, docs) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(docs);
-            }
-        });
+        DepositionRequest.find()
+            .then(depositions => { resolve(depositions); })
+            .catch(error => { reject(error); });
     });
 };
 
-Repository.prototype.removeDepositions = function() {
+// TODO: This removes all depositions - just remove the ones in the batch
+Repository.prototype.removeDepositions = function(batch) {
     return new Promise((resolve, reject) => {
-        const collection = db.collection('depositions');
-        collection.remove({}, (error) => {
+        DepositionRequest.remove({_id: { $in: batch.depositions.map(d => d._id) }}, (error) => {
             if (error) {
                 reject(error);
             } else {
-                resolve();
+                resolve(batch);
             }
         });
     });

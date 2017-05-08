@@ -2,11 +2,13 @@ const multihash = require('multihashes');
 const bs58 = require('bs58');
 
 let configuration;
-var contract;
+let contract;
+let logger;
 
-function ProvenRelay(_configuration, _contract) {
+function ProvenRelay(_configuration, _contract, _logger) {
     configuration = _configuration;
     contract = _contract;
+    logger = _logger;
 }
 
 var rawIpfsHashToIpfsHash = function(rawIpfsHash) {
@@ -31,13 +33,13 @@ ProvenRelay.prototype.onDepositionPublished = function(callback) {
     });
 };
 
-ProvenRelay.prototype.publishDeposition = function(ipfsHash) {
+ProvenRelay.prototype.publishDeposition = function(batch) {
     return new Promise((resolve, reject) => {
-        contract.sendTransaction('publishDeposition', { max_block_count: configuration.proven_relay.max_block_count, txOptions: { from: configuration.ethereum.coinbase } }, ipfsHash).then(() => {
-            resolve();
-        }).catch((error) => {
-            reject(error);
-        });
+        logger.info(JSON.stringify(batch));
+        logger.info(configuration.ethereum.coinbase);
+        contract.sendTransaction('publishDeposition', { max_block_count: configuration.proven_relay.max_block_count, txOptions: { from: configuration.ethereum.coinbase } }, batch.ipfsHash)
+            .then(() => { resolve(batch); })
+            .catch(error => { reject(error); });
     });
 };
 

@@ -18,7 +18,10 @@ var logger = new winston.Logger({
 logger.info('Initializing...');
 
 var Web3 = require('web3');
-var MongoClient = require('mongodb').MongoClient;
+
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+require('proven-models');
 
 var IPFS = require('ipfs-api');
 var ipfs = new IPFS();
@@ -55,71 +58,44 @@ var abi = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'res/proven_relay.a
 var contractDefinition = web3.eth.contract(abi);
 var web3Contract = contractDefinition.at(configuration.proven_relay.address);
 
-provenRelay = new ProvenRelay(configuration, new Contract(web3, web3Contract, logger));
+provenRelay = new ProvenRelay(configuration, new Contract(web3, web3Contract, logger), logger);
 
 ipfsLink = new IpfsLink(ipfs, fs, { mkdirp: mkdirp }, logger);
 metadataGatherer = new MetadataGatherer(configuration);
 
-function runBatcher(configuration, repository, ipfsLink, provenRelay, logger) {
-    return new Promise((resolve, reject) => {
-        let batcher = new Batcher(configuration, repository, ipfsLink, provenRelay, logger);
-        batcher.run(options).then(() => {
-            logger.info('Batcher shut down');
-            resolve();
-        }).catch((error) => {
-            reject(error);
-        });
-    });
+function connect() {
+    let options = { server: { socketOptions: { keepAlive: 1 } } };
+    return mongoose.connect(configuration.db.endpoint, options).connection;
 }
 
-function runRelay(configuration, provenRelay, repository, logger) {
-    return new Promise((resolve, reject) => {
-        let relay = new Relay(configuration, provenRelay, repository, logger);
-        relay.run(options).then(() => {
-            logger.info('Relay shut down');
-            resolve();
-        }).catch((error) => {
-            reject(error);
-        });
-    });
-}
+logger.info(JSON.stringify(options));
 
-MongoClient.connect(configuration.db.endpoint, function(error, db) {
-    if (error) {
-        logger.error(error);
-        process.exit(1);
-    }
+connect()
+    .on('error', console.log)
+    .on('disconnected', connect)
+    .once('open', idle);
 
-    repository = new Repository(db);
+function idle() {
+    logger.info(`Database connected: ${configuration.db.endpoint}`);
 
-    let promises = [];
+    repository = new Repository(logger);
+
+    let services = [];
     if (options.batch) {
-        promises.push(runBatcher(configuration, repository, ipfsLink, provenRelay, logger));
+        services.push(new Batcher(configuration, repository, ipfsLink, provenRelay, logger));
     }
     if (options.relay) {
-        promises.push(runRelay(configuration, provenRelay, repository, logger));
+        services.push(new Relay(configuration, provenRelay, repository, logger));
     }
 
-    Promise.all(promises).then(() => {
-        db.close();
-        process.exit(0);
-    }).catch((error) => {
-        logger.error(error);
-        db.close();
-        process.exit(1);
-    });
-
-/*
-    if (options.relay) {
-    }
-    if (options.index) {
-        let indexer = new Indexer(configuration, ipfsLink, metadataGatherer, repository, logger);
-        indexer.run(options).then(function() {
-            logger.info('Indexer shut down');
-        }).catch(function(error) {
+    Promise
+        .all(services.map(service => service.run(options)))
+        .then(() => {
+            logger.info('Done');
+            process.exit(0);
+        })
+        .catch(error => {
             logger.error(error);
             process.exit(1);
         });
-    }
-    */
-});
+};

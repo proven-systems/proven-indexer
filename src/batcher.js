@@ -1,5 +1,6 @@
 const path = require('path');
 const ipfs_hash_path = require('./ipfs_hash_path');
+const forever = require('./forever');
 
 var configuration;
 var repository;
@@ -37,73 +38,53 @@ function storeBatch(depositions) {
     return new Promise((resolve, reject) => {
         let batch = {
             batchedAt: Date().toString(),
-            enclosures: depositions.map((e) => { return { link: { '/': e.ipfsHash } }; })
+            enclosures: depositions.map(e => ({ link: { '/': e.ipfsHash }}))
         };
-        ipfsLink.storeBatch(batch).then((ipfsHash) => {
-            resolve(ipfsHash);
-        }).catch((error) => {
-            reject(error);
-        });
+        ipfsLink.storeBatch(batch)
+            .then(ipfsHash => { resolve({ ipfsHash: ipfsHash, depositions: depositions }); })
+            .catch(error => { reject(error); });
     });
 }
 
-function processDepositions(depositions) {
-    if (depositions.length != 0) {
-        return new Promise((resolve, reject) => {
-            let ipfsHash;
-            storeBatch(depositions).then((_ipfsHash) => {
-                ipfsHash = _ipfsHash;
-                return provenRelay.publishDeposition(ipfsHash);
-            }).then(() => {
-                return repository.removeDepositions(depositions);
-            }).then(() => {
-                resolve(ipfsHash);
-            }).catch((error) => {
-                reject(error);
-            });
-        });
-    } else {
-        return Promise.resolve();
-    }
+const processDepositions = (depositions) => {
+    return new Promise((resolve, reject) => {
+        logger.info('Batcher processing...');
+        if (depositions.length != 0) {
+            storeBatch(depositions)
+                .then(batch => provenRelay.publishDeposition(batch))
+                .then(batch => repository.removeDepositions(batch))
+                .then(batch => { resolve(batch); })
+                .catch(error => { reject(error); });
+        } else {
+            resolve({ depositions: depositions });
+        }
+    });
 }
 
-function forever(interval, action, callback) {
-    (function p() {
-        action((done) => {
-            if (done) {
-                callback();
-            } else {
-                setTimeout(p, interval);
-            }
-        });
-    })();
-}
-
-function batcherAction(options) {
-    return function(done) {
+const batcherAction = (options) => {
+    return (done) => {
         logger.info('Batcher checking...');
-        let depositions;
-        repository.fetchAllDepositions().then((_depositions) => {
-            depositions = _depositions;
-            return processDepositions(_depositions);
-        }).then((ipfsHash) => {
-            if (ipfsHash) {
-                logger.info(`Batch stored to IPFS at ${ipfsHash}`);
-                depositions.forEach((d) => { logger.info(` - ${d.ipfsHash}`); });
+        repository.fetchAllDepositions()
+            .then(depositions => processDepositions(depositions))
+            .then(({ ipfsHash, depositions }) => {
+                if (ipfsHash) {
+                    logger.info(`Batch stored to IPFS at ${ipfsHash}`);
+                    depositions.forEach((d) => { logger.info(` - ${d.ipfsHash}`); });
+                    done(options.runOnce);
+                } else {
+                    done();
+                }
+            })
+            .catch(error => {
+                logger.error(error);
                 done(options.runOnce);
-            } else {
-                done();
-            }
-        }).catch((error) => {
-            logger.error(error);
-            done(options.runOnce);
-        });
+            });
     };
 }
 
 Batcher.prototype.run = function(options = {}) {
-    logger.info('Batcher running...');
     return new Promise((resolve, reject) => {
+        logger.info('Batcher running...');
         forever(configuration.batcher.interval, batcherAction(options), () => { resolve(); });
     });
 };
