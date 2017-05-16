@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-* exiftool (`sudo apt-get install ibimage-exiftool-perl mongodb`)
+* exiftool (`sudo apt-get install libimage-exiftool-perl`)
 * mongodb (`sudo apt-get install mongodb`)
 * [nvm](https://github.com/creationix/nvm) (`curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash`)
 * `nvm install node`
