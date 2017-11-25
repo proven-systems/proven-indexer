@@ -16,6 +16,12 @@
     $> export DEV_CHAIN_ROOT=`pwd`/dev_chain
     $> chmod 400 dev_chain/etc/coinbase_password
 
+## Running
+
+    Set up `config/config.json` based on `config/config.sample.json`
+    $> export NODE_ENV=development
+    $> node index.js
+
 ### Tests
 
     $> npm test
