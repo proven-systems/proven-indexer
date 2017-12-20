@@ -2,6 +2,14 @@
 
 # proven-indexer
 
+The Proven Indexer watches the Ethereum blockchain transaction logs for new depositions that need verification.
+
+Process overview:
+* watches the transaction log for *DepositionPublished* events on the [Proven contract](https://github.com/proven-systems/proven-eth/blob/master/contracts/Proven.sol#L18)
+* fetches the IPFS payload locally and pins it so it doesn't disappear
+* extracts EXIF metadata from the payload
+* records each event in a local database
+
 ## Prerequisites
 
 * exiftool (`sudo apt-get install libimage-exiftool-perl`)
