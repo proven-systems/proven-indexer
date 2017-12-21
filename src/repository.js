@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const models = require('proven-models');
 const DepositionRequest = mongoose.model('DepositionRequest');
 
 let logger;
