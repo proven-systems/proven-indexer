@@ -36,7 +36,7 @@
     "mongodb": "^2.2.20",
     "mongoose": "^4.8.5",
     "multihashes": "^0.3.3",
-    "proven-models": "git+ssh://git@github.com:proven-systems/proven-models.git",
+    "proven-models": "git://git@github.com:proven-systems/proven-models.git",
     "web3": "^0.18.2",
     "winston": "^2.3.1"
   }
