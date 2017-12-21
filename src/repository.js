@@ -1,3 +1,4 @@
+const pm = require('proven-models');
 const mongoose = require('mongoose');
 const DepositionRequest = mongoose.model('DepositionRequest');
 
