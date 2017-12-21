@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer.git"
+    "url": "git+ssh://git@github.com/proven-systems/proven-indexer.git"
   },
   "author": "1AmOXsGnfXdbNg3RMTyPCHkn2aT",
   "license": "AGPL-3.0",
@@ -17,9 +17,9 @@
     "proven-indexer": "./index.js"
   },
   "bugs": {
-    "url": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer/issues"
+    "url": "https://github.com/proven-systems/proven-indexer/issues"
   },
-  "homepage": "https://github.com/1AmOXsGnfXdbNg3RMTyPCHkn2aT/proven-indexer#readme",
+  "homepage": "https://github.com/proven-systems/proven-indexer#readme",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
@@ -36,7 +36,7 @@
     "mongodb": "^2.2.20",
     "mongoose": "^4.8.5",
     "multihashes": "^0.3.3",
-    "proven-models": "git://git@github.com:proven-systems/proven-models.git",
+    "proven-models": "https://github.com/proven-systems/proven-models.git",
     "web3": "^0.18.2",
     "winston": "^2.3.1"
   }
